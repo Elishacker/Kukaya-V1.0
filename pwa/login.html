@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | Kukaya Apartment</title>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#4CAF50" />
+
+  <!-- Apple Support -->
+  <link rel="apple-touch-icon" href="assets/images/logo-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+<body>
+  <div class="container">
+    <img src="assets/images/logo.jpg" alt="Kukaya Apartment Logo" class="logo" />
+    <h2>Login with Phone</h2>
+
+    <form id="phoneLoginForm">
+      <input type="tel" id="phone" name="phone" maxlength="9" placeholder="Enter your 9-digit phone number" required />
+      <button type="submit" class="btn green" id="loginBtn">Login</button>
+    </form>
+
+    <p class="note">We’ll send a 4-digit OTP code to your number.</p>
+    <p id="statusMessage" class="note status-message"></p>
+  </div>
+
+  <script>
+    const form = document.getElementById("phoneLoginForm");
+    const phoneInput = document.getElementById("phone");
+    const loginBtn = document.getElementById("loginBtn");
+    const statusMsg = document.getElementById("statusMessage");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const phoneVal = phoneInput.value.trim();
+
+      // Validate 9-digit number
+      if (!/^\d{9}$/.test(phoneVal)) {
+        alert("Please enter a valid 9-digit phone number.");
+        return;
+      }
+
+      const phone = "+255" + phoneVal;
+
+      // UI feedback
+      statusMsg.textContent = "Sending OTP...";
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Please wait...";
+
+      const API_URL = `http://${window.location.hostname}:8000/api/auth/request-otp/`;
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone })
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.ok) {
+          localStorage.setItem("userPhone", phone);
+          if (data.otp) localStorage.setItem("demoOTP", data.otp); // for dev/testing
+
+          statusMsg.textContent = "OTP sent! Redirecting...";
+          setTimeout(() => {
+            window.location.href = "otp.html";
+          }, 1000);
+        } else {
+          statusMsg.textContent = "";
+          alert(data.error || "Failed to send OTP");
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Login";
+        }
+      } catch (err) {
+        console.error("Error:", err);
+        alert("Network error: " + err.message);
+        statusMsg.textContent = "";
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Login";
+      }
+    });
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('Service Worker registered:', reg.scope))
+          .catch(err => console.error('Service Worker registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

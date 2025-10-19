@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kukaya Apartment</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0033a0" />
+  <meta name="msapplication-TileColor" content="#0033a0" />
+  <meta name="msapplication-navbutton-color" content="#0033a0" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="#0033a0" />
+  <link rel="apple-touch-icon" href="/asset/images/apple-touch-icon.png" />
+</head>
+<body>
+  <div class="container">
+    <img src="assets/images/logo.jpg" alt="kukaya Apartment Logo" class="logo" />
+    <h2>Sign Up</h2>
+
+    <button onclick="window.location.href='login.html'" class="btn green">Continue with Phone</button>
+    <button onclick="window.location.href='dashboard.html'" class="btn blue">Signin as Guest</button>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker Registered:', reg.scope))
+        .catch(err => console.error('Service Worker Registration Failed:', err));
+    }
+  </script>
+  
+</body>
+</html>

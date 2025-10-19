@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kukaya Apartments — Dashboard</title>
+<link rel="icon" href="../assets/images/logo.png">
+<style>
+/* =================== Reset =================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+body { background-color: #f8f9fa; color: #333; padding-bottom: 80px; }
+
+/* =================== Header =================== */
+header {
+  background-color: #0033a0; color: white; padding: 12px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0; z-index: 10;
+}
+header h1 { font-size: 18px; }
+header .icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+
+/* =================== Search Bar =================== */
+.search-bar { padding: 10px 16px; background: #fff; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #ddd; }
+.search-bar input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; outline: none; }
+.search-bar button { background: #0033a0; border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+/* =================== Categories Bar =================== */
+.categories-bar { display: flex; justify-content: space-around; background: #fff; padding: 10px 0; border-bottom: 1px solid #ddd; }
+.category-btn { background: #f1f1f1; border: none; border-radius: 20px; padding: 8px 14px; font-size: 14px; color: #333; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s, color 0.2s; }
+.category-btn.active, .category-btn:hover { background: #0033a0; color: white; }
+
+/* =================== Sections =================== */
+main { padding: 10px 16px; }
+section { display: none; }
+section.active { display: block; }
+
+/* =================== Apartment Cards =================== */
+.apartments-list { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+.apartment-card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.apartment-card:hover { transform: translateY(-3px); box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.apartment-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+.apartment-card h3 { font-size: 16px; margin-bottom: 4px; }
+.apartment-card p { font-size: 14px; margin-bottom: 4px; }
+
+/* =================== Modal =================== */
+.modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
+.modal.active { display: flex; }
+.modal-content { background: white; border-radius: 10px; padding: 16px; width: 90%; max-height: 90%; overflow-y: auto; animation: slideIn 0.3s ease; }
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* =================== Image Slider =================== */
+.slider { position: relative; width: 100%; overflow: hidden; border-radius: 8px; margin-bottom: 10px; }
+.slides { display: flex; transition: transform 0.4s ease-in-out; }
+.slides img { width: 100%; height: 220px; object-fit: cover; border-radius: 8px; }
+.arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; }
+.arrow.left { left: 8px; }
+.arrow.right { right: 8px; }
+.dots { text-align: center; margin-top: 6px; }
+.dot { height: 8px; width: 8px; margin: 0 4px; background-color: #bbb; border-radius: 50%; display: inline-block; transition: background-color 0.3s; }
+.dot.active { background-color: #0033a0; }
+.modal h3 { font-size: 18px; margin-bottom: 6px; color: #0033a0; }
+.modal p { font-size: 14px; margin-bottom: 8px; }
+.modal-buttons { display: flex; gap: 8px; margin-top: 10px; }
+.modal-buttons button { flex: 1; border: none; border-radius: 6px; padding: 10px; cursor: pointer; font-size: 14px; }
+.btn-close { background: #ccc; color: black; }
+.btn-book { background: #0033a0; color: white; }
+
+/* =================== Bookings & Account =================== */
+.booking-card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.booking-card p { font-size: 14px; margin-bottom: 4px; }
+.account-section p { font-size: 14px; margin-bottom: 6px; }
+.logout-btn { background: #d9534f; color: white; width: 100%; padding: 10px; border: none; border-radius: 6px; margin-top: 10px; cursor: pointer; }
+
+/* =================== Bottom Navigation =================== */
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -1px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 10; }
+.bottom-nav button { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #555; cursor: pointer; }
+.bottom-nav button.active { color: #0033a0; }
+.bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
+.no-data { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <h1>Kukaya Apartments</h1>
+  <button class="icon-btn" type="button" aria-label="Notifications">🔔</button>
+</header>
+
+<!-- Search -->
+<div class="search-bar">
+  <input type="text" id="search-input" placeholder="Search apartments..." oninput="filterAndRenderApartments()">
+  <button onclick="filterAndRenderApartments()">🔍</button>
+</div>
+
+<!-- Categories -->
+<div class="categories-bar">
+  <button class="category-btn active" data-type="all">🏠 All</button>
+  <button class="category-btn" data-type="apartment">🏠 Apartment</button>
+  <button class="category-btn" data-type="hotel">🏨 Hotel</button>
+  <button class="category-btn" data-type="office">🏢 Office</button>
+</div>
+
+<!-- Sections -->
+<main>
+  <section id="home-section" class="active">
+    <h2>Available Apartments</h2>
+    <div id="owner-apartments" class="apartments-list"></div>
+  </section>
+
+  <section id="bookings-section">
+    <h2>Bookings</h2>
+    <div id="bookings-list"></div>
+  </section>
+
+  <section id="account-section">
+    <h2>Account</h2>
+    <div class="account-section">
+      <p><strong>Phone:</strong> <span id="account-phone"></span></p>
+      <p><strong>Role:</strong> <span id="account-role"></span></p>
+      <button class="logout-btn" type="button" onclick="logout()">Logout</button>
+    </div>
+  </section>
+</main>
+
+<!-- Modal -->
+<div class="modal" id="apartment-modal" role="dialog" aria-modal="true">
+  <div class="modal-content" id="modal-content"></div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
+  <button onclick="showSection('bookings', event)"><span>📄</span>Bookings</button>
+  <button onclick="showSection('account', event)"><span>👤</span>Account</button>
+</div>
+
+<script>
+let apartmentsData = [];
+let currentSlide = 0;
+let selectedCategory = 'all';
+
+/* Section Navigation */
+function showSection(section, event) {
+  document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`${section}-section`).classList.add('active');
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+  if(event) event.currentTarget.classList.add('active');
+}
+
+/* Escape HTML */
+function escapeHTML(str) {
+  return str ? str.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : '';
+}
+
+/* Load Apartments */
+async function loadOwnerApartments() {
+  try {
+    const res = await fetch(`http://${window.location.hostname}:8000/api/apartments/owner/`, { credentials: "include" });
+    const data = await res.json();
+    const container = document.getElementById("owner-apartments");
+    if(!data.ok || !data.apartments?.length) {
+      container.innerHTML = `<p class="no-data">No apartments found.</p>`;
+      return;
+    }
+    apartmentsData = data.apartments;
+    filterAndRenderApartments();
+  } catch(err) {
+    console.error(err);
+    document.getElementById("owner-apartments").innerHTML = `<p class="no-data">Failed to load apartments.</p>`;
+  }
+}
+
+/* Render Apartments */
+function renderApartments(list) {
+  const container = document.getElementById("owner-apartments");
+  if(!list.length) { container.innerHTML = `<p class="no-data">No apartments found.</p>`; return; }
+  container.innerHTML = list.map(a => `
+    <div class="apartment-card" onclick="openApartmentModal(${a.id})">
+      <img src="${a.images?.length ? escapeHTML(a.images[0].image_url) : 'assets/images/no-image.jpg'}" alt="${escapeHTML(a.name)}">
+      <h3>${escapeHTML(a.name)}</h3>
+      <p><strong>Location:</strong> ${escapeHTML(a.location)}</p>
+      <p><strong>Price:</strong> Tzs. ${escapeHTML(a.price)}/=</p>
+      <p><strong>Type:</strong> ${escapeHTML(a.service_type)}</p>
+    </div>`).join('');
+}
+
+/* Filter Apartments (Category + Search) */
+function filterAndRenderApartments() {
+  const query = document.getElementById("search-input").value.toLowerCase();
+  const filtered = apartmentsData.filter(a => {
+    const matchesCategory = selectedCategory === 'all' || a.service_type.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesSearch = a.name.toLowerCase().includes(query) || a.location.toLowerCase().includes(query);
+    return matchesCategory && matchesSearch;
+  });
+  renderApartments(filtered);
+}
+
+/* Category Buttons */
+document.querySelectorAll('.category-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedCategory = btn.dataset.type;
+    filterAndRenderApartments();
+  });
+});
+
+/* Modal & Slider */
+function openApartmentModal(id) {
+  const apt = apartmentsData.find(a => a.id === id);
+  if(!apt) return;
+  const modal = document.getElementById("apartment-modal");
+  const modalContent = document.getElementById("modal-content");
+  const images = apt.images?.length ? apt.images : [{ image_url: "assets/images/no-image.jpg" }];
+  const slidesHTML = images.map(img => `<img src="${escapeHTML(img.image_url)}" alt="${escapeHTML(apt.name)}">`).join('');
+  const dotsHTML = images.map((_,i) => `<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('');
+  const offersHTML = apt.offers?.length ? `<p><strong>Offers:</strong> ${apt.offers.join(', ')}</p>` : '';
+  let dynamicFieldsHTML = '';
+  if(apt.service_type === 'standalone') {
+    dynamicFieldsHTML = `<p><strong>Number of Apartments:</strong> ${apt.num_apartments || 'N/A'}</p>
+      <p><strong>Apartment Names:</strong> ${apt.apartment_names || 'N/A'}</p>
+      <p><strong>Number of Rooms:</strong> ${apt.num_rooms || 'N/A'}</p>`;
+  } else if(apt.service_type === 'ghorofa') {
+    dynamicFieldsHTML = `<p><strong>Number of Floors:</strong> ${apt.num_floors || 'N/A'}</p>
+      <p><strong>Rooms per Floor:</strong> ${apt.rooms_per_floor || 'N/A'}</p>`;
+  }
+  modalContent.innerHTML = `<div class="slider">
+    <div class="slides">${slidesHTML}</div>
+    <button class="arrow left" onclick="moveSlide(-1)">❮</button>
+    <button class="arrow right" onclick="moveSlide(1)">❯</button>
+    <div class="dots">${dotsHTML}</div>
+  </div>
+  <h3>${escapeHTML(apt.name)}</h3>
+  <p><strong>Location:</strong> ${escapeHTML(apt.location)}</p>
+  <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price)}/=</p>
+  <p>${escapeHTML(apt.details) || 'No additional details available.'}</p>
+  ${offersHTML}
+  ${dynamicFieldsHTML}
+  <div class="modal-buttons">
+    <button class="btn-book" onclick="bookApartment(${apt.id})">Book Now</button>
+    <button class="btn-book" onclick="chatApartment(${apt.id})">Chat</button>
+    <button class="btn-close" onclick="closeModal()">Close</button>
+  </div>`;
+  currentSlide = 0;
+  modal.classList.add("active");
+  showSlide();
+}
+function moveSlide(step) { const slides = document.querySelectorAll('.slides img'); if(!slides.length) return; currentSlide = (currentSlide + step + slides.length) % slides.length; showSlide(); }
+function showSlide() { const slides = document.querySelector('.slides'); const dots = document.querySelectorAll('.dot'); if(!slides) return; slides.style.transform = `translateX(-${currentSlide * 100}%)`; dots.forEach((d,i)=>d.classList.toggle('active', i===currentSlide)); }
+function closeModal() { document.getElementById("apartment-modal").classList.remove("active"); }
+function bookApartment(id) { alert(`Booking apartment ID: ${id}`); closeModal(); }
+function chatApartment(id) { alert(`Opening chat for apartment ID: ${id}`); closeModal(); }
+document.getElementById("apartment-modal").addEventListener("click", e => { if(e.target.id==="apartment-modal") closeModal(); });
+
+/* Load Apartments */
+loadOwnerApartments();
+</script>
+
+</body>
+</html>

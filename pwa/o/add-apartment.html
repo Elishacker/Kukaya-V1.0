@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Add Apartment — Owner Dashboard</title>
+<link rel="icon" href="../assets/images/logo.png" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+body { background-color: #f8f9fa; color: #333; padding-bottom: 100px; }
+header { background-color: #0033a0; color: white; padding: 12px 16px; display: flex;
+  justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; border-radius: 0 0 8px 8px; }
+header h1 { font-size: 18px; }
+header .icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+main { padding: 10px 16px; }
+section { display: none; }
+section.active { display: block; }
+.apartment-form { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
+.apartment-form label { font-weight: bold; margin-top: 8px; }
+.apartment-form input, .apartment-form textarea, .apartment-form select {
+  padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; }
+.apartment-form button {
+  background-color: #0033a0; color: white; padding: 12px; border: none;
+  border-radius: 6px; cursor: pointer; font-size: 16px; }
+.inline-options label, .inline-options-wrap label {
+  display: inline-flex; align-items: center; margin-right: 12px; margin-bottom: 6px; cursor: pointer; }
+.inline-options input, .inline-options-wrap input { margin-right: 4px; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+  box-shadow: 0 -1px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 10; }
+.bottom-nav button { background: none; border: none; display: flex; flex-direction: column; align-items: center;
+  font-size: 12px; color: #555; cursor: pointer; }
+.bottom-nav button.active { color: #0033a0; }
+.bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
+.floating-add { position: fixed; bottom: 250px; right: 20px; background: #0033a0; color: white;
+  font-size: 24px; width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 20; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Kukaya App | Owner</h1>
+  <button class="icon-btn" onclick="alert('Notifications coming soon!')">🔔</button>
+</header>
+
+<main>
+<section id="home-section" class="active">
+  <h2>Welcome Owner!</h2>
+  <p>Use the button below to add new apartments.</p>
+</section>
+
+<section id="add-section">
+  <h2>Add New Property</h2>
+  <form id="addApartmentForm" class="apartment-form">
+    <input name="name" placeholder="Property Name" required />
+    <input name="location" placeholder="Location" required />
+
+    <label>Price Type</label>
+    <div class="inline-options">
+      <label><input type="radio" name="price_type" value="night" required> Night</label>
+      <label><input type="radio" name="price_type" value="month" required> Month</label>
+    </div>
+    <input name="price_amount" type="number" placeholder="Enter Amount" required />
+
+    <label>Category</label>
+    <select name="category" id="category" required>
+      <option value="">Select Category</option>
+      <option value="apartment">Apartment</option>
+      <option value="hotel">Hotel</option>
+      <option value="office">Office</option>
+    </select>
+
+    <label>Mode of Premise</label>
+    <select name="service_type" id="service_type" required>
+      <option value="">Select Mode</option>
+    </select>
+
+    <div id="dynamic-fields"></div>
+
+    <label>Nearby Locations</label>
+    <input name="nearby_locations" placeholder="Comma-separated nearby landmarks" />
+
+    <label>Room Nature</label>
+    <select name="room_nature" required>
+      <option value="">Select Room Type</option>
+      <option value="self-contained">Self-contained</option>
+      <option value="single">Single</option>
+      <option value="master">Master</option>
+      <option value="studio">Studio</option>
+    </select>
+
+    <label>Other Offers</label>
+    <div class="inline-options-wrap">
+      <label><input type="checkbox" name="offers" value="wifi"> WiFi</label>
+      <label><input type="checkbox" name="offers" value="breakfast"> Breakfast</label>
+      <label><input type="checkbox" name="offers" value="fence"> Fence</label>
+      <label><input type="checkbox" name="offers" value="cctv"> CCTV</label>
+      <label><input type="checkbox" name="offers" value="tv"> TV</label>
+      <label><input type="checkbox" name="offers" value="parking"> Parking</label>
+      <label><input type="checkbox" name="offers" value="kitchen"> Kitchen</label>
+      <label><input type="checkbox" name="offers" value="washing_machine"> Laundry</label>
+      <label><input type="checkbox" name="offers" value="ac"> AC</label>
+      <label><input type="checkbox" name="offers" value="coffee_dispenser"> Coffee</label>
+      <label><input type="checkbox" name="offers" value="cooking_vessel"> Cooking</label>
+      <label><input type="checkbox" name="offers" value="fridge"> Fridge</label>
+    </div>
+
+    <label>Upload up to 5 images</label>
+    <input type="file" name="images" accept="image/*" multiple />
+
+    <button type="submit">Add Property</button>
+  </form>
+</section>
+</main>
+
+<div class="floating-add" onclick="showSection('add')">➕</div>
+
+<div class="bottom-nav">
+  <button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
+  <button onclick="alert('Bookings coming soon!')"><span>📄</span>Bookings</button>
+  <button onclick="alert('Account coming soon!')"><span>👤</span>Account</button>
+</div>
+
+<script>
+const csrftoken = getCookie("csrftoken");
+function getCookie(name) {
+  let cookieValue = null;
+  if(document.cookie && document.cookie !== ""){
+    document.cookie.split(";").forEach(cookie=>{
+      cookie=cookie.trim();
+      if(cookie.startsWith(name+"=")) cookieValue=decodeURIComponent(cookie.substring(name.length+1));
+    });
+  }
+  return cookieValue;
+}
+
+function showSection(section, event){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(section+'-section').classList.add('active');
+  if(event) document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
+  if(event) event.currentTarget.classList.add('active');
+}
+
+// Category & Modes
+const categoryModes={
+  apartment:["standalone","ghorofa"],
+  hotel:["standalone","ghorofa"],
+  office:["standalone","ghorofa"]
+};
+
+// Dynamic fields HTML
+const dynamicFieldsHTML={
+  apartment:`
+    <div id="standalone-fields">
+      <input name="num_apartments" type="number" placeholder="Number of Apartments" />
+      <input name="apartment_names" placeholder="Apartment Names (comma-separated)" />
+      <input name="num_rooms" type="number" placeholder="Rooms per Apartment" />
+    </div>
+    <div id="ghorofa-fields">
+      <input name="num_apartments" type="number" placeholder="Number of Apartments" />
+      <input name="apartment_names" placeholder="Apartment Names (comma-separated)" />
+      <input name="num_floors" type="number" placeholder="Number of Floors" />
+      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+    </div>
+  `,
+  hotel:`
+    <div id="standalone-fields">
+      <input name="num_rooms" type="number" placeholder="Number of Standalone Rooms" />
+    </div>
+    <div id="ghorofa-fields">
+      <input name="num_rooms" type="number" placeholder="Number of Rooms" />
+      <input name="num_floors" type="number" placeholder="Number of Floors" />
+      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+    </div>
+  `,
+  office:`
+    <div id="standalone-fields">
+      <input name="num_offices" type="number" placeholder="Number of Offices" />
+    </div>
+    <div id="ghorofa-fields">
+      <input name="num_offices" type="number" placeholder="Number of Offices" />
+      <input name="num_floors" type="number" placeholder="Number of Floors" />
+      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+    </div>
+  `
+};
+
+// Populate service type based on category
+document.getElementById("category").addEventListener("change",e=>{
+  const cat=e.target.value;
+  const modeSelect=document.getElementById("service_type");
+  const dynamicDiv=document.getElementById("dynamic-fields");
+  modeSelect.innerHTML='<option value="">Select Mode</option>';
+  if(categoryModes[cat]) categoryModes[cat].forEach(mode=>{
+    const opt=document.createElement("option");
+    opt.value=mode;
+    opt.textContent=mode.charAt(0).toUpperCase()+mode.slice(1);
+    modeSelect.appendChild(opt);
+  });
+  dynamicDiv.innerHTML=dynamicFieldsHTML[cat]||"";
+  dynamicDiv.querySelectorAll("div").forEach(d=>d.style.display="none");
+});
+
+document.getElementById("service_type").addEventListener("change",e=>{
+  const mode=e.target.value;
+  const dynamicDiv=document.getElementById("dynamic-fields");
+  dynamicDiv.querySelectorAll("div").forEach(d=>d.style.display="none");
+  const divToShow=dynamicDiv.querySelector("#"+mode+"-fields");
+  if(divToShow) divToShow.style.display="block";
+});
+
+// Form submission
+document.getElementById("addApartmentForm").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const form=e.target;
+
+  const formData={
+    name: form.name.value.trim(),
+    location: form.location.value.trim(),
+    service_type: form.service_type.value,
+    price_type: document.querySelector('input[name="price_type"]:checked')?.value||"",
+    price_amount: parseFloat(form.price_amount.value)||0,
+    room_nature: form.room_nature.value,
+    category: form.category.value,
+    nearby_locations: form.nearby_locations.value||"",
+    offers:Array.from(document.querySelectorAll('input[name="offers"]:checked')).map(o=>o.value),
+    dynamic_fields:{},
+    images:[]
+  };
+
+  // Collect ONLY visible inputs
+const dynamicData = {};
+form.querySelectorAll('#dynamic-fields div').forEach(div => {
+  if(div.style.display !== 'none') {
+    div.querySelectorAll('input').forEach(input => {
+      if(input.value.trim() !== '') {
+        dynamicData[input.name] = input.type === 'number' ? parseInt(input.value) : input.value.trim();
+      }
+    });
+  }
+});
+formData.dynamic_fields = dynamicData;
+
+
+  // Images
+  const files=form.querySelector('input[name="images"]').files;
+  for(let i=0;i<files.length;i++){
+    formData.images.push(await toBase64(files[i]));
+  }
+
+  try{
+    const res=await fetch(`http://${window.location.hostname}:8000/api/apartments/add/`,{
+      method:"POST",
+      credentials:"include",
+      headers:{"Content-Type":"application/json","X-CSRFToken":csrftoken},
+      body:JSON.stringify(formData)
+    });
+    const data=await res.json();
+    if(res.ok){
+      alert("Property added successfully!");
+      form.reset();
+      document.getElementById("dynamic-fields").innerHTML="";
+      showSection('home');
+    } else{
+      console.error(data);
+      alert("Error: "+JSON.stringify(data));
+    }
+  }catch(err){
+    console.error(err);
+    alert("Network or server error.");
+  }
+});
+
+function toBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload=()=>resolve(reader.result);
+    reader.onerror=error=>reject(error);
+  });
+}
+
+function logout() { window.location.href = "../index.html"; }
+
+</script>
+</body>
+</html>

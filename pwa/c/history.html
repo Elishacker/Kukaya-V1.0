@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Booking History</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="login-container">
+<h1>Your Bookings</h1>
+<div id="bookings"></div>
+<button onclick="logout()">Logout</button>
+</div>
+
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+async function loadHistory() {
+if (!isLoggedIn()) return window.location.href = 'login.html';
+const data = await getMyBookings();
+const div = document.getElementById('bookings');
+if (!data || data.length === 0) {
+div.innerHTML = '<p>No bookings yet.</p>';
+return;
+}
+div.innerHTML = data.map(b => `
+<div class="card">
+<h3>${b.apartment.name} (${b.status})</h3>
+<p>${b.start_date} → ${b.end_date}</p>
+<p>Total: ${b.total_price}</p>
+</div>
+`).join('');
+}
+loadHistory();
+</script>
+</body>
+</html>

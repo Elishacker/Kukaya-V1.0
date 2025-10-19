@@ -1,0 +1,25 @@
+<h2>Manage Users</h2>
+<div id="userList"></div>
+<h2>Manage Apartments</h2>
+<div id="apartmentList"></div>
+
+<script>
+async function loadUsers(){
+  const res = await fetch("http://localhost:8000/api/admin/users/");
+  const data = await res.json();
+  document.getElementById("userList").innerHTML = data.map(u => `
+    <div>${u.phone} - ${u.role}</div>
+  `).join("");
+}
+
+async function loadApartments(){
+  const res = await fetch("http://localhost:8000/api/admin/apartments/");
+  const data = await res.json();
+  document.getElementById("apartmentList").innerHTML = data.map(a => `
+    <div>${a.name} - ${a.owner_name} - ${a.price}</div>
+  `).join("");
+}
+
+loadUsers();
+loadApartments();
+</script>

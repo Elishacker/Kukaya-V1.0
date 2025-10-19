@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Book Apartment</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+</head>
+<body>
+<div class="login-container">
+<h1>Book Apartment</h1>
+<div id="apartment-info"></div>
+
+
+<form id="booking-form">
+<label>Start date</label>
+<input type="date" id="start_date" title="Select start date" placeholder="YYYY-MM-DD" required />
+<label>End date</label>
+<input type="date" id="end_date" title="Select end date" placeholder="YYYY-MM-DD" required />
+<button type="submit">Book Now</button>
+</form>
+
+
+<p id="message"></p>
+<button onclick="logout()">Logout</button>
+</div>
+
+
+<script src="js/api.js"></script>
+<script src="js/auth.js"></script>
+<script>
+// expects ?apartment_id=UUID in URL
+const params = new URLSearchParams(window.location.search);
+const apartmentId = params.get('apartment_id');
+const msg = document.getElementById('message');
+
+
+async function loadApartment() {
+if (!isLoggedIn()) return window.location.href = 'login.html';
+const a = await getApartment(apartmentId);
+const container = document.getElementById('apartment-info');
+container.innerHTML = `
+<h2>${a.name}</h2>
+<p>${a.location}</p>
+<p><strong>${a.price}</strong></p>
+<p>${a.details}</p>
+`;
+}
+
+
+document.getElementById('booking-form').addEventListener('submit', async (e)=>{
+e.preventDefault();
+const start = document.getElementById('start_date').value;
+const end = document.getElementById('end_date').value;
+msg.textContent = 'Creating booking...';
+const ok = await createBooking({apartment: apartmentId, start_date: start, end_date: end});
+if (ok) {
+msg.textContent = 'Booking created! Redirecting to history...';
+setTimeout(()=> window.location.href = 'history.html', 1200);
+} else {
+msg.textContent = 'Failed to create booking.';
+}
+});
+
+
+loadApartment();
+</script>
+</html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Dashboard — Kukaya App</title>
+  <link rel="icon" href="../assets/images/logo.png" />
+
+  <style>
+    /* ------------------- Reset ------------------- */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+    body { background-color: #f8f9fa; color: #333; padding-bottom: 80px; }
+
+    /* ------------------- Header ------------------- */
+    header { background-color: #0033a0; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+    header h1 { font-size: 18px; }
+    header .icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+
+    /* ------------------- Search ------------------- */
+    .search-bar { padding: 10px 16px; background: #fff; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #ddd; }
+    .search-bar input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; }
+    .search-bar button { background: #0033a0; border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+
+    /* ------------------- Sections ------------------- */
+    main { padding: 10px 16px; }
+    section { display: none; }
+    section.active { display: block; }
+
+    /* ------------------- Apartment Cards ------------------- */
+    .apartments-list { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+    .apartment-card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+    .apartment-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
+    .apartment-card h3 { font-size: 16px; margin-bottom: 4px; }
+    .apartment-card p { font-size: 14px; margin-bottom: 4px; }
+    .apartment-actions { display: flex; gap: 6px; margin-top: 6px; }
+    .apartment-actions button { flex: 1; padding: 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    .btn-view { background: #4CAF50; color: white; }
+    .btn-book { background: #0033a0; color: white; }
+    .btn-chat { background: #f4a261; color: white; }
+
+    /* ------------------- Booking Cards ------------------- */
+    .booking-card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+    .booking-card p { font-size: 14px; margin-bottom: 4px; }
+
+    /* ------------------- Account ------------------- */
+    .account-section p { font-size: 14px; margin-bottom: 6px; }
+
+    /* ------------------- Logout Button ------------------- */
+    .logout-btn {
+      background: #d9534f;
+      color: white;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    /* ------------------- Bottom Navigation ------------------- */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -1px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 10; }
+    .bottom-nav button { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #555; cursor: pointer; }
+    .bottom-nav button.active { color: #0033a0; }
+    .bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
+
+    /* ------------------- No Data ------------------- */
+    .no-data { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+
+    /* ------------------- Booking Modal ------------------- */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+    }
+
+    .modal {
+      background: white;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      padding: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .modal h3 { margin-bottom: 12px; text-align: center; color: #0033a0; }
+    .modal form { display: flex; flex-direction: column; gap: 10px; }
+    .modal input, .modal textarea {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      width: 100%;
+    }
+    .modal button {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+      background: #0033a0;
+    }
+    .modal .close-btn {
+      background: #d9534f;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- ------------------- Header ------------------- -->
+  <header>
+    <h1>Kukaya App</h1>
+    <button class="icon-btn" onclick="alert('Notifications coming soon!')">🔔</button>
+  </header>
+
+  <!-- ------------------- Search Bar ------------------- -->
+  <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Search apartments..." oninput="filterApartments()">
+    <button onclick="filterApartments()">🔍</button>
+  </div>
+
+  <main>
+    <!-- Home / Apartments -->
+    <section id="home-section" class="active">
+      <h2>Available Apartments</h2>
+      <div id="owner-apartments" class="apartments-list"></div>
+    </section>
+
+    <!-- Bookings -->
+    <section id="bookings-section">
+      <h2>Bookings</h2>
+      <div id="bookings-list"></div>
+    </section>
+
+    <!-- Account -->
+    <section id="account-section">
+      <h2>Account</h2>
+      <div class="account-section">
+        <p><strong>Phone:</strong> <span id="account-phone"></span></p>
+        <p><strong>Role:</strong> <span id="account-role"></span></p>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ------------------- Booking Modal ------------------- -->
+  <div id="booking-modal" class="modal-overlay">
+    <div class="modal">
+      <h3>Book Apartment</h3>
+      <form id="booking-form" onsubmit="submitBooking(event)">
+        <input type="hidden" id="booking-apartment-id" />
+        <label>Check-in Date</label>
+        <input type="date" id="checkin" required />
+        <label>Check-out Date</label>
+        <input type="date" id="checkout" required />
+        <label>Additional Notes</label>
+        <textarea id="notes" rows="3" placeholder="Any extra requests?"></textarea>
+        <button type="submit">Submit Booking</button>
+        <button type="button" class="close-btn" onclick="closeBookingForm()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ------------------- Bottom Navigation ------------------- -->
+  <div class="bottom-nav">
+    <button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
+    <button onclick="showSection('bookings', event)"><span>📄</span>Bookings</button>
+    <button onclick="showSection('account', event)"><span>👤</span>Profile</button>
+  </div>
+
+  <script>
+    const csrftoken = getCookie("csrftoken");
+    let apartmentsData = [];
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== "") {
+        document.cookie.split(";").forEach(cookie => {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + "=")) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        });
+      }
+      return cookieValue;
+    }
+
+    // ------------------- Navigation -------------------
+    function showSection(section, event) {
+      document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+      document.getElementById(section + '-section').classList.add('active');
+      document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+      if(event) event.currentTarget.classList.add('active');
+    }
+
+    // ------------------- Apartments -------------------
+    async function loadOwnerApartments() {
+      try {
+        const res = await fetch(`http://${window.location.hostname}:8000/api/apartments/owner/`, { credentials: "include" });
+        const data = await res.json();
+        const container = document.getElementById("owner-apartments");
+        if (!data.ok || !data.apartments || data.apartments.length === 0) {
+          container.innerHTML = `<p class="no-data">No apartments found.</p>`;
+          return;
+        }
+        apartmentsData = data.apartments;
+        renderApartments(apartmentsData);
+      } catch (err) {
+        console.error(err);
+        document.getElementById("owner-apartments").innerHTML = `<p class="no-data">Failed to load apartments.</p>`;
+      }
+    }
+
+    function renderApartments(list) {
+      const container = document.getElementById("owner-apartments");
+      container.innerHTML = list.map(a => `
+        <div class="apartment-card">
+          ${a.images?.length ? `<img src="${a.images[0].image_url}" alt="${a.name}">` : `<img src="assets/images/no-image.jpg" alt="No image">`}
+          <h3>${a.name}</h3>
+          <p><strong>Location:</strong> ${a.location}</p>
+          <p><strong>Price:</strong> Tzs. ${a.price}/=</p>
+          <p>${a.details || ''}</p>
+          <div class="apartment-actions">
+            <button class="btn-view" onclick="viewDetails(${a.id})">👁️ View</button>
+            <button class="btn-book" onclick="openBookingForm(${a.id})">📄 Book</button>
+            <button class="btn-chat" onclick="chat(${a.id})">💬 Chat</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function filterApartments() {
+      const q = document.getElementById("search-input").value.toLowerCase();
+      renderApartments(apartmentsData.filter(a => a.name.toLowerCase().includes(q) || a.location.toLowerCase().includes(q)));
+    }
+
+    // ------------------- Booking Modal Logic -------------------
+    function openBookingForm(id) {
+      document.getElementById("booking-modal").style.display = "flex";
+      document.getElementById("booking-apartment-id").value = id;
+    }
+    function closeBookingForm() {
+      document.getElementById("booking-modal").style.display = "none";
+      document.getElementById("booking-form").reset();
+    }
+
+    async function submitBooking(e) {
+      e.preventDefault();
+      const id = document.getElementById("booking-apartment-id").value;
+      const payload = {
+        apartment: id, // ✅ Django expects this
+        checkin: document.getElementById("checkin").value,
+        checkout: document.getElementById("checkout").value,
+        notes: document.getElementById("notes").value
+      };
+
+      try {
+        const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/add/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+          credentials: "include",
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        alert(data.message || "Booking submitted!");
+        closeBookingForm();
+        loadBookings();
+      } catch (err) {
+        console.error(err);
+        alert("Failed to submit booking.");
+      }
+    }
+
+    // ------------------- Other -------------------
+    function viewDetails(id) { alert("View details for apartment ID " + id); }
+    function chat(id) { alert("Chat with owner for apartment ID " + id); }
+
+    async function loadBookings() {
+      try {
+        const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/history/`, { credentials: "include" });
+        const data = await res.json();
+        const c = document.getElementById("bookings-list");
+        if (!data.ok || !data.bookings?.length) return c.innerHTML = `<p class="no-data">No bookings found.</p>`;
+        c.innerHTML = data.bookings.map(b => `
+          <div class="booking-card">
+            <p><strong>${b.apartment_name}</strong> - ${b.location}</p>
+            <p>Price: Tzs ${b.price} | Status: ${b.status}</p>
+            <p>Booked at: ${new Date(b.created_at).toLocaleString()}</p>
+          </div>`).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadAccount() {
+      try {
+        const res = await fetch(`http://${window.location.hostname}:8000/api/auth/profile/`, { credentials: "include" });
+        const data = await res.json();
+        if (!data.ok) return;
+        document.getElementById("account-phone").textContent = data.user.phone;
+        document.getElementById("account-role").textContent = data.user.role;
+      } catch(err) { console.error(err); }
+    }
+
+    function logout() { window.location.href = "../login.html"; }
+
+    // ------------------- Init -------------------
+    loadOwnerApartments();
+    loadBookings();
+    loadAccount();
+
+  </script>
+</body>
+</html>

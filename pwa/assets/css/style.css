@@ -1,0 +1,311 @@
+/* === Reset & Base === */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html, body {
+    width: 100%;
+    height: 100%;
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #ffffff;
+    color: #333;
+  }
+  
+  /* === Containers (Login, OTP, etc) === */
+  .container {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100vh;
+  }
+  
+  .logo {
+    width: 200px;
+    margin: 0 auto 20px;
+  }
+  
+  h2 {
+    margin-bottom: 30px;
+    font-size: 24px;
+    color: #000;
+  }
+  
+  /* === Inputs === */
+  input[type="tel"], 
+  input[type="text"], 
+  input[type="password"], 
+  .search-input {
+    width: 80%;
+    max-width: 300px;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    margin-bottom: 15px;
+    text-align: center;
+    outline: none;
+  }
+  
+  /* === Notes & Small Text === */
+  .note {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+  }
+  
+  /* === Buttons === */
+  .btn {
+    width: 100%;
+    max-width: 300px;
+    padding: 14px;
+    margin: 10px auto;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    display: block;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  
+  .btn:hover {
+    opacity: 0.9;
+  }
+  
+  .btn.green { background-color: #4CAF50; color: #fff; }
+  .btn.blue { background-color: #0033a0; color: #fff; }
+  .btn.red { background-color: #dc3545; color: #fff; }
+  
+  /* Icon-only buttons */
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+  }
+  
+  .icon-btn i {
+    width: 22px;
+    height: 22px;
+  }
+  
+  /* === OTP Inputs === */
+  .otp-inputs {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+  }
+  
+  .otp-inputs input {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+  }
+  
+  /* === Dashboard (Guest & Owner) === */
+  .dashboard {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    background-color: #fdf7ff;
+    margin-bottom: 70px; /* for bottom nav */
+  }
+  
+  /* Top bar */
+  .top-bar {
+    background-color: #0033a0;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .top-bar .search-input {
+    flex: 1;
+    padding: 10px;
+    border-radius: 6px;
+    border: none;
+    font-size: 16px;
+    text-align: left;
+  }
+  
+  .chat-icon {
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+  }
+  
+  /* Main content */
+  .main-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    width: 100%;
+  }
+  
+  /* === Listings (Guest) === */
+  .listing {
+    background-color: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    text-align: left;
+  }
+  
+  .listing img {
+    width: 100%;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .listing h3 {
+    margin: 8px 0 4px;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .listing p {
+    font-size: 14px;
+    color: #666;
+    margin: 2px 0;
+  }
+  
+  .listing-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .listing-actions .btn {
+    flex: 1;
+    font-size: 14px;
+    padding: 10px;
+  }
+  
+  /* === Owner Dashboard === */
+  .owner-dashboard {
+    padding: 20px;
+    margin-bottom: 70px;
+  }
+  
+  .top-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+  }
+  
+  .add-btn {
+    background: #007bff;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .apartment-card {
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  
+  .apartment-info h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  
+  .apartment-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .apartment-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .btn-edit i { color: #28a745; }
+  .btn-delete i { color: #dc3545; }
+  
+  /* === Responsive === */
+  @media (max-width: 480px) {
+    .search-input {
+      font-size: 14px;
+      padding: 8px;
+    }
+  
+    .nav-item {
+      font-size: 12px;
+    }
+  
+    .nav-item svg {
+      width: 18px;
+      height: 18px;
+    }
+  
+    .otp-inputs input {
+      width: 40px;
+      height: 40px;
+      font-size: 20px;
+    }
+  }
+  
+  @media (min-width: 600px) {
+    .main-content {
+      padding: 24px;
+    }
+  
+    .nav-item {
+      font-size: 14px;
+    }
+  
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .dashboard {
+      max-width: 500px;
+      margin: 0 auto;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+    }
+  
+    .container {
+      max-width: 500px;
+    }
+  }
+  
