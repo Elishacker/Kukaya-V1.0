@@ -1,7 +1,7 @@
-from rest_framework import serializers
+from rest_framework import serializers # type: ignore
 from .models import User, Apartment, ApartmentImage, Booking
-from django.core.files.base import ContentFile
-from django.utils import timezone
+from django.core.files.base import ContentFile # type: ignore
+from django.utils import timezone # type: ignore
 import base64
 
 
@@ -104,9 +104,9 @@ class ApartmentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         # Category check
-        if attrs.get('category') not in ['apartment', 'hotel', 'office']:
+        if attrs.get('category') not in ['apartment', 'hotel', 'lodge', 'office']:
             raise serializers.ValidationError({
-                'category': 'Category must be one of: apartment, hotel, office.'
+                'category': 'Category must be one of: apartment, hotel, lodge, office.'
             })
 
         return attrs

@@ -32,7 +32,7 @@ section.active { display: block; }
   font-size: 12px; color: #555; cursor: pointer; }
 .bottom-nav button.active { color: #0033a0; }
 .bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
-.floating-add { position: fixed; bottom: 250px; right: 20px; background: #0033a0; color: white;
+.floating-add { position: fixed; bottom: 160px; right: 20px; background: #0033a0; color: white;
   font-size: 24px; width: 56px; height: 56px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 20; }
@@ -69,6 +69,7 @@ section.active { display: block; }
       <option value="">Select Category</option>
       <option value="apartment">Apartment</option>
       <option value="hotel">Hotel</option>
+      <option value="lodge">Lodge</option>
       <option value="office">Office</option>
     </select>
 
@@ -147,6 +148,7 @@ function showSection(section, event){
 const categoryModes={
   apartment:["standalone","ghorofa"],
   hotel:["standalone","ghorofa"],
+  lodge:["standalone","ghorofa"],
   office:["standalone","ghorofa"]
 };
 
@@ -154,8 +156,8 @@ const categoryModes={
 const dynamicFieldsHTML={
   apartment:`
     <div id="standalone-fields">
-      <input name="num_apartments" type="number" placeholder="Number of Apartments" />
-      <input name="apartment_names" placeholder="Apartment Names (comma-separated)" />
+      <input name="num_apartments" type="number" placeholder="Number of Apartments" /><br>
+      <input name="apartment_names" placeholder="Apartment Names (comma-separated)" /><br>
       <input name="num_rooms" type="number" placeholder="Rooms per Apartment" />
     </div>
     <div id="ghorofa-fields">
@@ -168,6 +170,8 @@ const dynamicFieldsHTML={
   hotel:`
     <div id="standalone-fields">
       <input name="num_rooms" type="number" placeholder="Number of Standalone Rooms" />
+      <input name="hotel_names" placeholder="Hotel Names (comma-separated)" /><br>
+      <input name="num_rooms" type="number" placeholder="Rooms per Hotel" />
     </div>
     <div id="ghorofa-fields">
       <input name="num_rooms" type="number" placeholder="Number of Rooms" />
@@ -175,9 +179,24 @@ const dynamicFieldsHTML={
       <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
     </div>
   `,
+  lodge:`
+    <div id="standalone-fields">
+      <input name="num_lodge" type="number" placeholder="Number of Offices" />
+      <input name="lodge_names" placeholder="Lodge Names (comma-separated)" /><br>
+      <input name="num_rooms" type="number" placeholder="Rooms per Lodge" />
+    </div>
+    <div id="ghorofa-fields">
+      <input name="num_lodge" type="number" placeholder="Number of Lodge" />
+      <input name="num_floors" type="number" placeholder="Number of Floors" />
+      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+    </div>
+  `
+  ,
   office:`
     <div id="standalone-fields">
-      <input name="num_offices" type="number" placeholder="Number of Offices" />
+      <input name="num_offices" type="number" placeholder="Number of Offices" /><br>
+      <input name="office_names" placeholder="Office Names (comma-separated)" /><br>
+      <input name="num_rooms" type="number" placeholder="Rooms per Office" />
     </div>
     <div id="ghorofa-fields">
       <input name="num_offices" type="number" placeholder="Number of Offices" />

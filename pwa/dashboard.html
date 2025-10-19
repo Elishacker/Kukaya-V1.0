@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kukaya Apartments — Dashboard</title>
-<link rel="icon" href="../assets/images/logo.png">
+<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
 <style>
 /* =================== Reset =================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
@@ -44,7 +44,7 @@ section.active { display: block; }
 
 /* =================== Modal =================== */
 .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
-.modal.active { display: flex; }
+.modal.active, .modal.show { display: flex; }
 .modal-content { background: white; border-radius: 10px; padding: 16px; width: 90%; max-height: 90%; overflow-y: auto; animation: slideIn 0.3s ease; }
 @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
@@ -58,12 +58,21 @@ section.active { display: block; }
 .dots { text-align: center; margin-top: 6px; }
 .dot { height: 8px; width: 8px; margin: 0 4px; background-color: #bbb; border-radius: 50%; display: inline-block; transition: background-color 0.3s; }
 .dot.active { background-color: #0033a0; }
+
 .modal h3 { font-size: 18px; margin-bottom: 6px; color: #0033a0; }
 .modal p { font-size: 14px; margin-bottom: 8px; }
 .modal-buttons { display: flex; gap: 8px; margin-top: 10px; }
 .modal-buttons button { flex: 1; border: none; border-radius: 6px; padding: 10px; cursor: pointer; font-size: 14px; }
 .btn-close { background: #ccc; color: black; }
 .btn-book { background: #0033a0; color: white; }
+
+/* =================== Booking Modal =================== */
+#booking-modal .modal-content form label { display: block; font-size: 14px; margin-bottom: 4px; color: #0033a0; }
+#booking-modal .modal-content form input,
+#booking-modal .modal-content form textarea {
+  width: 100%; padding: 8px; margin-bottom: 10px;
+  border: 1px solid #ccc; border-radius: 6px;
+}
 
 /* =================== Bookings & Account =================== */
 .booking-card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
@@ -123,12 +132,32 @@ section.active { display: block; }
   </section>
 </main>
 
-<!-- Modal -->
+<!-- Apartment Modal -->
 <div class="modal" id="apartment-modal" role="dialog" aria-modal="true">
   <div class="modal-content" id="modal-content"></div>
 </div>
 
-<!-- Bottom Nav -->
+<!-- Booking Modal -->
+<div class="modal" id="booking-modal" role="dialog" aria-modal="true">
+  <div class="modal-content">
+    <h3>Book Apartment</h3>
+    <form id="booking-form" onsubmit="submitBooking(event)">
+      <input type="hidden" id="booking-apartment-id">
+      <label for="checkin">Check-in Date:</label>
+      <input type="date" id="checkin" required>
+      <label for="checkout">Check-out Date:</label>
+      <input type="date" id="checkout" required>
+      <label for="notes">Additional Notes:</label>
+      <textarea id="notes" placeholder="Write any notes..."></textarea>
+      <div class="modal-buttons">
+        <button type="submit" class="btn-book">Submit Booking</button>
+        <button type="button" class="btn-close" onclick="closeBookingForm()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bottom Navigation -->
 <div class="bottom-nav">
   <button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
   <button onclick="showSection('bookings', event)"><span>📄</span>Bookings</button>
@@ -140,7 +169,7 @@ let apartmentsData = [];
 let currentSlide = 0;
 let selectedCategory = 'all';
 
-/* Section Navigation */
+/* ---------- Section Navigation ---------- */
 function showSection(section, event) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.getElementById(`${section}-section`).classList.add('active');
@@ -148,19 +177,21 @@ function showSection(section, event) {
   if(event) event.currentTarget.classList.add('active');
 }
 
-/* Escape HTML */
+/* ---------- Escape HTML ---------- */
 function escapeHTML(str) {
   return str ? str.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : '';
 }
 
-/* Load Apartments */
-async function loadOwnerApartments() {
+/* ---------- Load Apartments from Backend (category filtered) ---------- */
+async function loadApartments(category='all') {
   try {
-    const res = await fetch(`http://${window.location.hostname}:8000/api/apartments/owner/`, { credentials: "include" });
+    const url = `http://${window.location.hostname}:8000/api/apartments/lists`;
+    const res = await fetch(url, { credentials: "include" });
     const data = await res.json();
     const container = document.getElementById("owner-apartments");
     if(!data.ok || !data.apartments?.length) {
       container.innerHTML = `<p class="no-data">No apartments found.</p>`;
+      apartmentsData = [];
       return;
     }
     apartmentsData = data.apartments;
@@ -171,7 +202,7 @@ async function loadOwnerApartments() {
   }
 }
 
-/* Render Apartments */
+/* ---------- Render Apartments ---------- */
 function renderApartments(list) {
   const container = document.getElementById("owner-apartments");
   if(!list.length) { container.innerHTML = `<p class="no-data">No apartments found.</p>`; return; }
@@ -181,32 +212,32 @@ function renderApartments(list) {
       <h3>${escapeHTML(a.name)}</h3>
       <p><strong>Location:</strong> ${escapeHTML(a.location)}</p>
       <p><strong>Price:</strong> Tzs. ${escapeHTML(a.price)}/=</p>
-      <p><strong>Type:</strong> ${escapeHTML(a.service_type)}</p>
+      <p><strong>Type:</strong> ${escapeHTML(a.category)}</p>
     </div>`).join('');
 }
 
-/* Filter Apartments (Category + Search) */
+/* ---------- Filter Apartments ---------- */
 function filterAndRenderApartments() {
   const query = document.getElementById("search-input").value.toLowerCase();
   const filtered = apartmentsData.filter(a => {
-    const matchesCategory = selectedCategory === 'all' || a.service_type.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesCategory = selectedCategory === 'all' || a.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch = a.name.toLowerCase().includes(query) || a.location.toLowerCase().includes(query);
     return matchesCategory && matchesSearch;
   });
   renderApartments(filtered);
 }
 
-/* Category Buttons */
+/* ---------- Category Buttons ---------- */
 document.querySelectorAll('.category-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     selectedCategory = btn.dataset.type;
-    filterAndRenderApartments();
+    loadApartments(selectedCategory);
   });
 });
 
-/* Modal & Slider */
+/* ---------- Apartment Modal ---------- */
 function openApartmentModal(id) {
   const apt = apartmentsData.find(a => a.id === id);
   if(!apt) return;
@@ -216,46 +247,102 @@ function openApartmentModal(id) {
   const slidesHTML = images.map(img => `<img src="${escapeHTML(img.image_url)}" alt="${escapeHTML(apt.name)}">`).join('');
   const dotsHTML = images.map((_,i) => `<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('');
   const offersHTML = apt.offers?.length ? `<p><strong>Offers:</strong> ${apt.offers.join(', ')}</p>` : '';
-  let dynamicFieldsHTML = '';
-  if(apt.service_type === 'standalone') {
-    dynamicFieldsHTML = `<p><strong>Number of Apartments:</strong> ${apt.num_apartments || 'N/A'}</p>
-      <p><strong>Apartment Names:</strong> ${apt.apartment_names || 'N/A'}</p>
-      <p><strong>Number of Rooms:</strong> ${apt.num_rooms || 'N/A'}</p>`;
-  } else if(apt.service_type === 'ghorofa') {
-    dynamicFieldsHTML = `<p><strong>Number of Floors:</strong> ${apt.num_floors || 'N/A'}</p>
-      <p><strong>Rooms per Floor:</strong> ${apt.rooms_per_floor || 'N/A'}</p>`;
-  }
-  modalContent.innerHTML = `<div class="slider">
-    <div class="slides">${slidesHTML}</div>
-    <button class="arrow left" onclick="moveSlide(-1)">❮</button>
-    <button class="arrow right" onclick="moveSlide(1)">❯</button>
-    <div class="dots">${dotsHTML}</div>
-  </div>
-  <h3>${escapeHTML(apt.name)}</h3>
-  <p><strong>Location:</strong> ${escapeHTML(apt.location)}</p>
-  <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price)}/=</p>
-  <p>${escapeHTML(apt.details) || 'No additional details available.'}</p>
-  ${offersHTML}
-  ${dynamicFieldsHTML}
-  <div class="modal-buttons">
-    <button class="btn-book" onclick="bookApartment(${apt.id})">Book Now</button>
-    <button class="btn-book" onclick="chatApartment(${apt.id})">Chat</button>
-    <button class="btn-close" onclick="closeModal()">Close</button>
-  </div>`;
+  modalContent.innerHTML = `
+    <div class="slider">
+      <div class="slides">${slidesHTML}</div>
+      <button class="arrow left" onclick="moveSlide(-1)">❮</button>
+      <button class="arrow right" onclick="moveSlide(1)">❯</button>
+      <div class="dots">${dotsHTML}</div>
+    </div>
+    <h3>${escapeHTML(apt.name)}</h3>
+    <p><strong>Location:</strong> ${escapeHTML(apt.location)}</p>
+    <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price)}/=</p>
+    <p>${escapeHTML(apt.details) || 'No additional details available.'}</p>
+    ${offersHTML}
+    <div class="modal-buttons">
+      <button class="btn-book" onclick="bookApartment(${apt.id})">Book Now</button>
+      <button class="btn-book" onclick="chatApartment(${apt.id})">Chat</button>
+      <button class="btn-close" onclick="closeModal()">Close</button>
+    </div>`;
   currentSlide = 0;
   modal.classList.add("active");
   showSlide();
 }
+
 function moveSlide(step) { const slides = document.querySelectorAll('.slides img'); if(!slides.length) return; currentSlide = (currentSlide + step + slides.length) % slides.length; showSlide(); }
 function showSlide() { const slides = document.querySelector('.slides'); const dots = document.querySelectorAll('.dot'); if(!slides) return; slides.style.transform = `translateX(-${currentSlide * 100}%)`; dots.forEach((d,i)=>d.classList.toggle('active', i===currentSlide)); }
 function closeModal() { document.getElementById("apartment-modal").classList.remove("active"); }
-function bookApartment(id) { alert(`Booking apartment ID: ${id}`); closeModal(); }
-function chatApartment(id) { alert(`Opening chat for apartment ID: ${id}`); closeModal(); }
-document.getElementById("apartment-modal").addEventListener("click", e => { if(e.target.id==="apartment-modal") closeModal(); });
 
-/* Load Apartments */
-loadOwnerApartments();
+/* ---------- Booking Logic ---------- */
+function getCookie(name) {
+  const cookieValue = document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1];
+  return cookieValue ? decodeURIComponent(cookieValue) : null;
+}
+const csrftoken = getCookie('csrftoken');
+
+function bookApartment(id) { closeModal(); openBookingForm(id); }
+function openBookingForm(id) { document.getElementById("booking-modal").classList.add("show"); document.getElementById("booking-apartment-id").value = id; }
+function closeBookingForm() { document.getElementById("booking-modal").classList.remove("show"); document.getElementById("booking-form").reset(); }
+
+async function submitBooking(e) {
+  e.preventDefault();
+  const id = document.getElementById("booking-apartment-id").value;
+  const payload = {
+    apartment: id,
+    checkin: document.getElementById("checkin").value,
+    checkout: document.getElementById("checkout").value,
+    notes: document.getElementById("notes").value
+  };
+  try {
+    const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/add`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
+      credentials: "include",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if(data.ok) { alert("Booking submitted successfully!"); closeBookingForm(); loadBookings(); }
+    else alert(data.error || "Booking failed.");
+  } catch (err) { console.error(err); alert("Network error during booking."); }
+}
+
+/* ---------- Account & Bookings ---------- */
+async function loadBookings() {
+  try {
+    const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/history/`, { credentials: "include" });
+    const data = await res.json();
+    const container = document.getElementById("bookings-list");
+    if (!data.ok || !data.bookings || data.bookings.length === 0) {
+      container.innerHTML = `<p class="no-data">No bookings found.</p>`;
+      return;
+    }
+    container.innerHTML = data.bookings.map(b => `
+      <div class="booking-card">
+        <p><strong>${escapeHTML(b.apartment_name)}</strong> - ${escapeHTML(b.location)}</p>
+        <p>Price: Tzs. ${b.price} | Status: ${escapeHTML(b.status)}</p>
+        <p>Booked at: ${new Date(b.created_at).toLocaleString()}</p>
+      </div>`).join('');
+  } catch(err) {
+    console.error(err);
+    document.getElementById("bookings-list").innerHTML = `<p class="no-data">Failed to load bookings.</p>`;
+  }
+}
+
+async function loadAccount() {
+  const res = await fetch(`http://${window.location.hostname}:8000/api/auth/profile`, { credentials: "include" });
+  const data = await res.json();
+  if(!data.ok) return;
+  document.getElementById("account-phone").textContent = data.user.phone || "N/A";
+  document.getElementById("account-role").textContent = data.user.role || "User";
+}
+
+function logout() { window.location.href = "index.html"; }
+function chatApartment(id) { alert(`Chat feature coming soon for Apartment ID ${id}`); }
+
+/* ---------- Init ---------- */
+loadApartments(selectedCategory);
+loadBookings();
+loadAccount();
 </script>
-
 </body>
 </html>

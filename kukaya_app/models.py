@@ -1,6 +1,6 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils import timezone
+from django.db import models # type: ignore
+from django.contrib.auth.models import AbstractUser, BaseUserManager # type: ignore
+from django.utils import timezone # type: ignore
 import random
 
 # ====================================================
@@ -67,6 +67,7 @@ class User(AbstractUser):
 CATEGORY_CHOICES = [
     ("apartment", "Apartment"),
     ("hotel", "Hotel"),
+    ("lodge", "Lodge"),
     ("office", "Office"),
 ]
 

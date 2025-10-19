@@ -1,10 +1,10 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from django.contrib.auth import authenticate, get_user_model, login
-from django.db import transaction
-from django.core.files.base import ContentFile
-from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes # type: ignore
+from rest_framework.permissions import IsAuthenticated, AllowAny # type: ignore
+from rest_framework.response import Response # type: ignore
+from django.contrib.auth import authenticate, get_user_model, login # type: ignore
+from django.db import transaction # type: ignore
+from django.core.files.base import ContentFile # type: ignore
+from django.utils import timezone # type: ignore
 from .models import Apartment, Booking, PhoneOTP, ApartmentImage
 from .serializers import (
     UserSerializer,
@@ -236,6 +236,8 @@ def list_apartments(request):
         apartments = apartments.filter(category="apartment")
     elif category == "hotels":
         apartments = apartments.filter(category="hotel")
+    elif category == "lodge":
+        apartments = apartments.filter(category="lodge")
     elif category == "offices":
         apartments = apartments.filter(category="office")
     # "All" shows everything
