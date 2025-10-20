@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kukaya Apartments — Dashboard</title>
-<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+<link rel="shortcut icon" href="../assets/icons/icon-192.jpg" type="image/x-icon">
+<link rel="manifest" href="../manifest.json">
 <style>
 /* =================== Reset =================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
@@ -86,6 +87,51 @@ section.active { display: block; }
 .bottom-nav button.active { color: #0033a0; }
 .bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
 .no-data { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+
+/* =================== Booking Form   ==================== */
+
+/* Modal base override - already defined earlier but add icons and rooms control */
+.input-icon { position: relative; }
+.input-icon input[type="date"] { padding-right: 42px; }
+.input-icon .icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: auto; /* make clickable on small screens */
+  font-size: 1.12rem;
+  opacity: 0.85;
+  background: rgba(255,255,255,0.95);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+/* Rooms control */
+.rooms-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rooms-control input {
+  appearance: none;
+}
+.rooms-control button {
+  background: #0033a0;
+  color: white;
+  border: none;
+  font-size: 1.2rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* smaller screen tweaks */
+@media (max-width: 480px) {
+  .modal-content { width: 95%; padding: 16px; }
+  .input-icon .icon { right: 8px; }
+  .rooms-control button { width: 36px; height: 36px; }
+}
 </style>
 </head>
 <body>
@@ -142,13 +188,27 @@ section.active { display: block; }
   <div class="modal-content">
     <h3>Book Apartment</h3>
     <form id="booking-form" onsubmit="submitBooking(event)">
-      <input type="hidden" id="booking-apartment-id">
+      <input type="hidden" id="booking-apartment-id" />
+
       <label for="checkin">Check-in Date:</label>
-      <input type="date" id="checkin" required>
+      <div class="input-icon">
+        <input type="date" id="checkin" required />
+      </div>
+
       <label for="checkout">Check-out Date:</label>
-      <input type="date" id="checkout" required>
+      <div class="input-icon">
+        <input type="date" id="checkout" required />
+      </div>
+
+      <label for="rooms">Number of Rooms:</label>
+      <div class="rooms-control">
+        <input type="number" id="rooms" min="1" value="1" placeholder="Any number" />
+        <button type="button" id="add-room">+</button>
+      </div>
+
       <label for="notes">Additional Notes:</label>
-      <textarea id="notes" placeholder="Write any notes..."></textarea>
+      <textarea id="notes" placeholder="Write any notes (option)..."></textarea>
+
       <div class="modal-buttons">
         <button type="submit" class="btn-book">Submit Booking</button>
         <button type="button" class="btn-close" onclick="closeBookingForm()">Cancel</button>
@@ -165,69 +225,176 @@ section.active { display: block; }
 </div>
 
 <script>
+/* ============================
+   Utility & Security Helpers
+   ============================ */
+
+const API_BASE = `http://${window.location.hostname}:8000/api`;
+
+/**
+ * Read cookie value safely
+ */
+function getCookie(name) {
+  const cookies = document.cookie ? document.cookie.split('; ') : [];
+  for (const c of cookies) {
+    const [k, ...v] = c.split('=');
+    if (k === name) return decodeURIComponent(v.join('='));
+  }
+  return null;
+}
+
+/**
+ * Centralized fetch wrapper:
+ * - includes credentials
+ * - adds X-CSRFToken header if available
+ * - handles 401 by redirecting to login
+ */
+async function apiFetch(path, opts = {}) {
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const headers = new Headers(opts.headers || {});
+  headers.set('Accept', 'application/json');
+  if (opts.body && !(opts.body instanceof FormData)) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  const csrftoken = getCookie('csrftoken');
+  if (csrftoken) headers.set('X-CSRFToken', csrftoken);
+
+  const res = await fetch(url, {
+    ...opts,
+    headers,
+    credentials: 'include',
+  });
+
+  if (res.status === 401) {
+    // session expired or not authenticated — redirect to login
+    alert('Session expired or not authenticated. Please login.');
+    window.location.href = '../index.html';
+    return null;
+  }
+
+  // try parse as json, but gracefully handle non-json
+  const text = await res.text();
+  try {
+    return JSON.parse(text || '{}');
+  } catch (err) {
+    return { ok: false, error: 'Invalid JSON response', raw: text };
+  }
+}
+
+/**
+ * Small safe-escape for when templates need inline text (we prefer textContent elsewhere)
+ */
+function escapeHTML(str = '') {
+  return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+/* ============================
+   Auth check & init
+   ============================ */
+
 let apartmentsData = [];
 let currentSlide = 0;
 let selectedCategory = 'all';
+let currentUser = null;
 
-/* ---------- Section Navigation ---------- */
+async function checkAuth() {
+  const profile = await apiFetch('/auth/profile');
+  if (!profile || !profile.ok || !profile.user) {
+    // redirect handled in apiFetch if 401
+    window.location.href = '../index.html';
+    return null;
+  }
+  currentUser = profile.user; // object returned by backend
+  // Safely display account fields using textContent
+  document.getElementById('account-phone').textContent = currentUser.phone || 'N/A';
+  document.getElementById('account-role').textContent = currentUser.role || 'User';
+  return currentUser;
+}
+
+/* ============================
+   Section navigation
+   ============================ */
 function showSection(section, event) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.getElementById(`${section}-section`).classList.add('active');
   document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-  if(event) event.currentTarget.classList.add('active');
+  if (event) event.currentTarget.classList.add('active');
 }
 
-/* ---------- Escape HTML ---------- */
-function escapeHTML(str) {
-  return str ? str.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) : '';
-}
+/* ============================
+   Apartments loading & rendering
+   ============================ */
 
-/* ---------- Load Apartments from Backend (category filtered) ---------- */
 async function loadApartments(category='all') {
   try {
-    const url = `http://${window.location.hostname}:8000/api/apartments/lists`;
-    const res = await fetch(url, { credentials: "include" });
-    const data = await res.json();
-    const container = document.getElementById("owner-apartments");
-    if(!data.ok || !data.apartments?.length) {
-      container.innerHTML = `<p class="no-data">No apartments found.</p>`;
+    const res = await apiFetch('/apartments/lists');
+    if (!res || !res.ok) {
+      document.getElementById('owner-apartments').innerHTML = `<p class="no-data">Failed to load apartments.</p>`;
       apartmentsData = [];
       return;
     }
-    apartmentsData = data.apartments;
+    apartmentsData = res.apartments || [];
     filterAndRenderApartments();
-  } catch(err) {
+  } catch (err) {
     console.error(err);
-    document.getElementById("owner-apartments").innerHTML = `<p class="no-data">Failed to load apartments.</p>`;
+    document.getElementById('owner-apartments').innerHTML = `<p class="no-data">Failed to load apartments.</p>`;
   }
 }
 
-/* ---------- Render Apartments ---------- */
 function renderApartments(list) {
-  const container = document.getElementById("owner-apartments");
-  if(!list.length) { container.innerHTML = `<p class="no-data">No apartments found.</p>`; return; }
-  container.innerHTML = list.map(a => `
-    <div class="apartment-card" onclick="openApartmentModal(${a.id})">
-      <img src="${a.images?.length ? escapeHTML(a.images[0].image_url) : 'assets/images/no-image.jpg'}" alt="${escapeHTML(a.name)}">
-      <h3>${escapeHTML(a.name)}</h3>
-      <p><strong>Location:</strong> ${escapeHTML(a.location)}</p>
-      <p><strong>Price:</strong> Tzs. ${escapeHTML(a.price)}/=</p>
-      <p><strong>Type:</strong> ${escapeHTML(a.category)}</p>
-    </div>`).join('');
+  const container = document.getElementById('owner-apartments');
+  if (!list || list.length === 0) {
+    container.innerHTML = `<p class="no-data">No apartments found.</p>`;
+    return;
+  }
+
+  // Build cards but insert text safely
+  container.innerHTML = '';
+  list.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'apartment-card';
+    card.tabIndex = 0;
+    // store id on dataset
+    card.dataset.apartmentId = a.id;
+
+    const img = document.createElement('img');
+    img.alt = a.name ? String(a.name) : 'Apartment';
+    img.src = (a.images && a.images.length) ? a.images[0].image_url : 'assets/images/no-image.jpg';
+    card.appendChild(img);
+
+    const h3 = document.createElement('h3');
+    h3.textContent = a.name || 'Unnamed';
+    card.appendChild(h3);
+
+    const loc = document.createElement('p');
+    loc.innerHTML = `<strong>Location:</strong> ${escapeHTML(a.location || '')}`;
+    card.appendChild(loc);
+
+    const price = document.createElement('p');
+    price.innerHTML = `<strong>Price:</strong> Tzs. ${escapeHTML(a.price || '')}/=`;
+    card.appendChild(price);
+
+    const cat = document.createElement('p');
+    cat.innerHTML = `<strong>Type:</strong> ${escapeHTML(a.category || '')}`;
+    card.appendChild(cat);
+
+    card.addEventListener('click', () => openApartmentModal(a.id));
+    container.appendChild(card);
+  });
 }
 
-/* ---------- Filter Apartments ---------- */
 function filterAndRenderApartments() {
-  const query = document.getElementById("search-input").value.toLowerCase();
+  const query = (document.getElementById('search-input').value || '').toLowerCase();
   const filtered = apartmentsData.filter(a => {
-    const matchesCategory = selectedCategory === 'all' || a.category.toLowerCase() === selectedCategory.toLowerCase();
-    const matchesSearch = a.name.toLowerCase().includes(query) || a.location.toLowerCase().includes(query);
+    const matchesCategory = selectedCategory === 'all' || (a.category || '').toLowerCase() === selectedCategory.toLowerCase();
+    const matchesSearch = (a.name || '').toLowerCase().includes(query) || (a.location || '').toLowerCase().includes(query);
     return matchesCategory && matchesSearch;
   });
   renderApartments(filtered);
 }
 
-/* ---------- Category Buttons ---------- */
+/* Category buttons */
 document.querySelectorAll('.category-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -237,16 +404,22 @@ document.querySelectorAll('.category-btn').forEach(btn => {
   });
 });
 
-/* ---------- Apartment Modal ---------- */
+/* ============================
+   Apartment Modal + slider
+   ============================ */
+
 function openApartmentModal(id) {
   const apt = apartmentsData.find(a => a.id === id);
-  if(!apt) return;
-  const modal = document.getElementById("apartment-modal");
-  const modalContent = document.getElementById("modal-content");
-  const images = apt.images?.length ? apt.images : [{ image_url: "assets/images/no-image.jpg" }];
-  const slidesHTML = images.map(img => `<img src="${escapeHTML(img.image_url)}" alt="${escapeHTML(apt.name)}">`).join('');
-  const dotsHTML = images.map((_,i) => `<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('');
-  const offersHTML = apt.offers?.length ? `<p><strong>Offers:</strong> ${apt.offers.join(', ')}</p>` : '';
+  if (!apt) return;
+  const modal = document.getElementById('apartment-modal');
+  const modalContent = document.getElementById('modal-content');
+
+  const images = apt.images && apt.images.length ? apt.images : [{image_url: 'assets/images/no-image.jpg'}];
+  const slidesHTML = images.map(img => `<img src="${escapeHTML(img.image_url)}" alt="${escapeHTML(apt.name || '')}">`).join('');
+  const dotsHTML = images.map((_, i) => `<span class="dot ${i===0? 'active' : ''}" data-index="${i}"></span>`).join('');
+  const offersHTML = apt.offers && apt.offers.length ? `<p><strong>Offers:</strong> ${escapeHTML(apt.offers.join(', '))}</p>` : '';
+
+  // Use textContent for sensitive fields elsewhere, but building modal innerHTML for complex layout is acceptable since we escape values.
   modalContent.innerHTML = `
     <div class="slider">
       <div class="slides">${slidesHTML}</div>
@@ -254,95 +427,239 @@ function openApartmentModal(id) {
       <button class="arrow right" onclick="moveSlide(1)">❯</button>
       <div class="dots">${dotsHTML}</div>
     </div>
-    <h3>${escapeHTML(apt.name)}</h3>
-    <p><strong>Location:</strong> ${escapeHTML(apt.location)}</p>
-    <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price)}/=</p>
-    <p>${escapeHTML(apt.details) || 'No additional details available.'}</p>
+    <h3>${escapeHTML(apt.name || '')}</h3>
+    <p><strong>Location:</strong> ${escapeHTML(apt.location || '')}</p>
+    <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price || '')}/=</p>
+    <p>${escapeHTML(apt.details || 'No additional details available.')}</p>
     ${offersHTML}
     <div class="modal-buttons">
       <button class="btn-book" onclick="bookApartment(${apt.id})">Book Now</button>
       <button class="btn-book" onclick="chatApartment(${apt.id})">Chat</button>
       <button class="btn-close" onclick="closeModal()">Close</button>
-    </div>`;
+    </div>
+  `;
+
   currentSlide = 0;
-  modal.classList.add("active");
+  modal.classList.add('active');
   showSlide();
 }
 
-function moveSlide(step) { const slides = document.querySelectorAll('.slides img'); if(!slides.length) return; currentSlide = (currentSlide + step + slides.length) % slides.length; showSlide(); }
-function showSlide() { const slides = document.querySelector('.slides'); const dots = document.querySelectorAll('.dot'); if(!slides) return; slides.style.transform = `translateX(-${currentSlide * 100}%)`; dots.forEach((d,i)=>d.classList.toggle('active', i===currentSlide)); }
-function closeModal() { document.getElementById("apartment-modal").classList.remove("active"); }
-
-/* ---------- Booking Logic ---------- */
-function getCookie(name) {
-  const cookieValue = document.cookie.split('; ').find(row => row.startsWith(name + '='))?.split('=')[1];
-  return cookieValue ? decodeURIComponent(cookieValue) : null;
+function moveSlide(step) {
+  const slides = document.querySelectorAll('.slides img');
+  if (!slides.length) return;
+  currentSlide = (currentSlide + step + slides.length) % slides.length;
+  showSlide();
 }
-const csrftoken = getCookie('csrftoken');
 
-function bookApartment(id) { closeModal(); openBookingForm(id); }
-function openBookingForm(id) { document.getElementById("booking-modal").classList.add("show"); document.getElementById("booking-apartment-id").value = id; }
-function closeBookingForm() { document.getElementById("booking-modal").classList.remove("show"); document.getElementById("booking-form").reset(); }
+function showSlide() {
+  const slides = document.querySelector('.slides');
+  const dots = document.querySelectorAll('.dot');
+  if (!slides) return;
+  slides.style.transform = `translateX(-${currentSlide * 100}%)`;
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
 
+function closeModal() {
+  document.getElementById('apartment-modal').classList.remove('active');
+}
+
+/* ============================
+   Booking Flow
+   ============================ */
+
+function bookApartment(id) {
+  closeModal();
+  openBookingForm(id);
+}
+
+function openBookingForm(id) {
+  document.getElementById('booking-modal').classList.add('show');
+  document.getElementById('booking-apartment-id').value = id;
+  // reset form safely
+  document.getElementById('booking-form').reset();
+  document.getElementById('rooms').value = '1';
+}
+
+function closeBookingForm() {
+  document.getElementById('booking-modal').classList.remove('show');
+  document.getElementById('booking-form').reset();
+}
+
+/* focus date on icon click */
+function focusDate(id) {
+  const el = document.getElementById(id);
+  if (el) el.focus();
+}
+
+/* increment rooms */
+document.getElementById('add-room').addEventListener('click', () => {
+  const roomsInput = document.getElementById('rooms');
+  const val = Math.max(1, parseInt(roomsInput.value || '1', 10));
+  roomsInput.value = val + 1;
+});
+
+/* submit booking with authentication */
 async function submitBooking(e) {
   e.preventDefault();
-  const id = document.getElementById("booking-apartment-id").value;
+  if (!currentUser) {
+    alert('You must be logged in to make a booking.');
+    window.location.href = '../index.html';
+    return;
+  }
+
+  const id = document.getElementById('booking-apartment-id').value;
   const payload = {
     apartment: id,
-    checkin: document.getElementById("checkin").value,
-    checkout: document.getElementById("checkout").value,
-    notes: document.getElementById("notes").value
+    checkin: document.getElementById('checkin').value,
+    checkout: document.getElementById('checkout').value,
+    notes: document.getElementById('notes').value || '',
+    // include rooms as optional — backend can ignore or use
+    rooms: parseInt(document.getElementById('rooms').value || '1', 10)
   };
+
+  // Basic client-side validation
+  if (!payload.checkin || !payload.checkout) {
+    alert('Please select check-in and check-out dates.');
+    return;
+  }
+
   try {
-    const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/add`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRFToken": csrftoken },
-      credentials: "include",
-      body: JSON.stringify(payload)
+    const res = await apiFetch('/bookings/add/', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     });
-    const data = await res.json();
-    if(data.ok) { alert("Booking submitted successfully!"); closeBookingForm(); loadBookings(); }
-    else alert(data.error || "Booking failed.");
-  } catch (err) { console.error(err); alert("Network error during booking."); }
+    if (!res) return; // apiFetch already handled redirect on 401
+    if (res.ok) {
+      alert('Booking submitted successfully!');
+      closeBookingForm();
+      loadBookings();
+    } else {
+      alert(res.error || 'Booking failed.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Network error during booking.');
+  }
 }
 
-/* ---------- Account & Bookings ---------- */
+/* ============================
+   Bookings & Account
+   ============================ */
+
 async function loadBookings() {
   try {
-    const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/history/`, { credentials: "include" });
-    const data = await res.json();
-    const container = document.getElementById("bookings-list");
-    if (!data.ok || !data.bookings || data.bookings.length === 0) {
+    const res = await apiFetch('/bookings/history/');
+    if (!res) return;
+    const container = document.getElementById('bookings-list');
+    if (!res.ok || !res.bookings || res.bookings.length === 0) {
       container.innerHTML = `<p class="no-data">No bookings found.</p>`;
       return;
     }
-    container.innerHTML = data.bookings.map(b => `
-      <div class="booking-card">
-        <p><strong>${escapeHTML(b.apartment_name)}</strong> - ${escapeHTML(b.location)}</p>
-        <p>Price: Tzs. ${b.price} | Status: ${escapeHTML(b.status)}</p>
-        <p>Booked at: ${new Date(b.created_at).toLocaleString()}</p>
-      </div>`).join('');
-  } catch(err) {
+
+    container.innerHTML = '';
+    res.bookings.forEach(b => {
+      const card = document.createElement('div');
+      card.className = 'booking-card';
+
+      const title = document.createElement('p');
+      title.innerHTML = `<strong>${escapeHTML(b.apartment_name || '')}</strong> - ${escapeHTML(b.location || '')}`;
+      card.appendChild(title);
+
+      const meta = document.createElement('p');
+      meta.textContent = `Price: Tzs. ${b.price || ''} | Status: ${b.status || ''}`;
+      card.appendChild(meta);
+
+      const created = document.createElement('p');
+      created.textContent = `Booked at: ${new Date(b.created_at).toLocaleString()}`;
+      card.appendChild(created);
+
+      container.appendChild(card);
+    });
+  } catch (err) {
     console.error(err);
-    document.getElementById("bookings-list").innerHTML = `<p class="no-data">Failed to load bookings.</p>`;
+    document.getElementById('bookings-list').innerHTML = `<p class="no-data">Failed to load bookings.</p>`;
   }
 }
 
 async function loadAccount() {
-  const res = await fetch(`http://${window.location.hostname}:8000/api/auth/profile`, { credentials: "include" });
-  const data = await res.json();
-  if(!data.ok) return;
-  document.getElementById("account-phone").textContent = data.user.phone || "N/A";
-  document.getElementById("account-role").textContent = data.user.role || "User";
+  try {
+    const res = await apiFetch('/auth/profile');
+    if (!res) return;
+    if (!res.ok || !res.user) return;
+    // Already set in checkAuth; but refresh display if needed
+    document.getElementById('account-phone').textContent = res.user.phone || 'N/A';
+    document.getElementById('account-role').textContent = res.user.role || 'User';
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-function logout() { window.location.href = "../index.html"; }
-function chatApartment(id) { alert(`Chat feature coming soon for Apartment ID ${id}`); }
+/* ============================
+   Auth & Logout
+   ============================ */
 
-/* ---------- Init ---------- */
-loadApartments(selectedCategory);
-loadBookings();
-loadAccount();
+   async function logout() {
+  try {
+    // 1️⃣ Call backend logout if endpoint exists
+    await fetch(`http://${window.location.hostname}:8000/api/auth/logout/`, {
+      method: 'POST',
+      credentials: 'include', // send cookies
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken(), // include CSRF if needed
+      }
+    }).catch(()=>null); // ignore if endpoint missing
+
+    // 2️⃣ Clear all sessionStorage & localStorage
+    sessionStorage.clear();
+    localStorage.clear();
+
+    // 3️⃣ Clear cookies (simple way — may need backend support for HttpOnly cookies)
+    document.cookie.split(";").forEach(function(c) { 
+      document.cookie = c.trim().split("=")[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/'; 
+    });
+
+    // 4️⃣ Redirect to login/index page
+    window.location.href = '../index.html';
+  } catch(err){
+    console.error("Logout error:", err);
+    alert("Failed to logout properly. Please clear browser data manually.");
+    window.location.href = '../index.html';
+  }
+}
+
+// CSRF helper (if needed)
+function getCSRFToken() {
+  const name = "csrftoken=";
+  const cookies = document.cookie.split(";").map(c => c.trim());
+  for (const cookie of cookies) {
+    if (cookie.startsWith(name)) return cookie.substring(name.length);
+  }
+  return null;
+}
+
+
+/* ============================
+   Misc: chat placeholder
+   ============================ */
+function chatApartment(id) {
+  alert(`Chat feature coming soon for Apartment ID ${id}`);
+}
+
+/* ============================
+   Init sequence (auth first)
+   ============================ */
+(async () => {
+  const user = await checkAuth();
+  if (!user) return; // checkAuth will redirect if not authenticated
+  // Now load application data
+  await loadApartments(selectedCategory);
+  await loadBookings();
+  await loadAccount();
+})();
+
+/* ========= end script ========= */
 </script>
+
 </body>
 </html>

@@ -11,6 +11,7 @@ urlpatterns = [
     path('auth/verify-otp/', views.verify_otp, name='verify-otp'),
     path('auth/profile/', views.user_profile, name='profile'),
     path('auth/profile/update/', views.update_profile, name='update-profile'),
+    path('auth/logout/', views.logout, name='logout'),
 
     # ----------------------------
     # Admin Authentication

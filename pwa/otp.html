@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OTP Verification | Kukaya Apartment</title>
   <link rel="stylesheet" href="assets/css/style.css" />
+  <!-- PWA manifest -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#4CAF50" />
+  <link rel="shortcut icon" href="../favicon.ico" type="image/x-icon">
 </head>
 <body>
   <div class="container">
@@ -14,78 +18,142 @@
 
     <form id="otpForm">
       <div class="otp-inputs">
-        <input type="text" maxlength="1" required title="Enter OTP digit" placeholder="0" />
-        <input type="text" maxlength="1" required title="Enter OTP digit" placeholder="0" />
-        <input type="text" maxlength="1" required title="Enter OTP digit" placeholder="0" />
-        <input type="text" maxlength="1" required title="Enter OTP digit" placeholder="0" />
+        <input type="text" maxlength="1" required pattern="\d" title="Enter OTP digit" placeholder="0" />
+        <input type="text" maxlength="1" required pattern="\d" title="Enter OTP digit" placeholder="0" />
+        <input type="text" maxlength="1" required pattern="\d" title="Enter OTP digit" placeholder="0" />
+        <input type="text" maxlength="1" required pattern="\d" title="Enter OTP digit" placeholder="0" />
       </div>
-      <button type="submit" class="btn green">Verify</button>
+      <button type="submit" class="btn green" id="verifyBtn">Verify</button>
+      <p id="statusMessage" class="note status-message"></p>
     </form>
 
     <p>Didn't get the code? <a href="#" id="resendOTP">Resend</a></p>
   </div>
 
   <script>
-    const phone = localStorage.getItem("userPhone");
-    const correctOTP = localStorage.getItem("demoOTP"); // for dev mode
+    const phone = sessionStorage.getItem("userPhone");
     const userPhoneDisplay = document.getElementById("userPhoneDisplay");
     const inputs = document.querySelectorAll(".otp-inputs input");
+    const verifyBtn = document.getElementById("verifyBtn");
+    const statusMsg = document.getElementById("statusMessage");
     userPhoneDisplay.textContent = phone || "your number";
 
-    // Autofocus next input
-    inputs.forEach((input, index) => {
+    // --- Get CSRF token from cookies ---
+    function getCSRFToken() {
+      const name = "csrftoken=";
+      const cookies = document.cookie.split(";").map(c => c.trim());
+      for (const cookie of cookies) {
+        if (cookie.startsWith(name)) return cookie.substring(name.length);
+      }
+      return null;
+    }
+
+    // Autofocus to next input
+    inputs.forEach((input, idx) => {
       input.addEventListener("input", () => {
-        if (input.value.length === 1 && index < inputs.length - 1) {
-          inputs[index + 1].focus();
+        input.value = input.value.replace(/\D/, ''); // digits only
+        if (input.value.length === 1 && idx < inputs.length - 1) {
+          inputs[idx + 1].focus();
+        }
+      });
+      input.addEventListener("keydown", (e) => {
+        if(e.key === "Backspace" && input.value === "" && idx > 0){
+          inputs[idx - 1].focus();
         }
       });
     });
 
+    // Verify OTP
     document.getElementById("otpForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const enteredOTP = Array.from(inputs).map(i => i.value).join('');
+      if(enteredOTP.length !== 4){
+        alert("Please enter a valid 4-digit OTP.");
+        return;
+      }
 
-      const API_URL = `http://${window.location.hostname}:8000/api/auth/verify-otp/`;
+      verifyBtn.disabled = true;
+      statusMsg.textContent = "Verifying OTP...";
+
       try {
-        const res = await fetch(API_URL, {
+        const res = await fetch(`http://${window.location.hostname}:8000/api/auth/verify-otp/`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()  // CSRF token added
+          },
+          credentials: "include", // send cookies
           body: JSON.stringify({ phone, otp: enteredOTP })
         });
+
+        if (!res.ok) throw new Error("Network response not ok");
+
         const data = await res.json();
 
         if(data.ok){
-          localStorage.setItem("isLoggedIn", "true");
-          localStorage.setItem("userRole", data.user.role);
+          sessionStorage.setItem("isLoggedIn", "true");
+          sessionStorage.setItem("userRole", data.user.role);
 
-          // Redirect based on role
-          switch(data.user.role){
-            case "customer":
-              window.location.href = "c/apartment.html"; break;
-            case "owner":
-              window.location.href = "o/dashboard.html"; break;
-            case "admin":
-              window.location.href = "a/dashboard.html"; break;
-            default:
-              window.location.href = "c/dashboard.html";
-          }
+          statusMsg.textContent = "OTP verified! Redirecting...";
+          setTimeout(() => {
+            switch(data.user.role){
+              case "customer":
+                window.location.href = "c/apartment.html"; break;
+              case "owner":
+                window.location.href = "o/dashboard.html"; break;
+              case "admin":
+                window.location.href = "a/dashboard.html"; break;
+              default:
+                window.location.href = "c/dashboard.html";
+            }
+          }, 800);
         } else {
+          statusMsg.textContent = "";
           alert(data.error || "Invalid OTP");
+          verifyBtn.disabled = false;
         }
       } catch(err){
         console.error(err);
+        statusMsg.textContent = "";
         alert("Network error: " + err.message);
+        verifyBtn.disabled = false;
       }
     });
 
-    document.getElementById("resendOTP").addEventListener("click", async () => {
-      const API_URL = `http://${window.location.hostname}:8000/api/auth/request-otp/`;
-      await fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone })
-      });
-      alert("OTP resent to " + phone);
+    // Resend OTP
+    document.getElementById("resendOTP").addEventListener("click", async (e) => {
+      e.preventDefault();
+      if(!phone){
+        alert("Phone number not found. Please go back and login again.");
+        return;
+      }
+      statusMsg.textContent = "Resending OTP...";
+      try {
+        const res = await fetch(`http://${window.location.hostname}:8000/api/auth/request-otp/`, {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCSRFToken()  // CSRF token added
+          },
+          credentials: "include",
+          body: JSON.stringify({ phone })
+        });
+
+        if (!res.ok) throw new Error("Network response not ok");
+
+        const data = await res.json();
+        if(data.ok){
+          statusMsg.textContent = "OTP resent successfully!";
+          if(data.otp) sessionStorage.setItem("demoOTP", data.otp); // dev only
+        } else {
+          statusMsg.textContent = "";
+          alert(data.error || "Failed to resend OTP");
+        }
+      } catch(err){
+        console.error(err);
+        statusMsg.textContent = "";
+        alert("Network error: " + err.message);
+      }
     });
   </script>
 </body>

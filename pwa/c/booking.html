@@ -12,16 +12,70 @@
 <div class="login-container">
 <h1>Book Apartment</h1>
 <div id="apartment-info"></div>
-
-
 <form id="booking-form">
-<label>Start date</label>
-<input type="date" id="start_date" title="Select start date" placeholder="YYYY-MM-DD" required />
-<label>End date</label>
-<input type="date" id="end_date" title="Select end date" placeholder="YYYY-MM-DD" required />
-<button type="submit">Book Now</button>
-</form>
-
+    <label>Start date</label>
+    <div class="input-icon">
+      <input type="date" id="start_date" title="Select start date" placeholder="DD-MM-YYYY" required />
+    </div>
+  
+    <label>End date</label>
+    <div class="input-icon">
+      <input type="date" id="end_date" title="Select end date" placeholder="DD-MM-YYYY" required />
+    </div>
+  
+    <label>Number of Rooms</label>
+    <div class="rooms-control">
+      <input type="number" id="rooms" title="Add number of rooms" placeholder="Number of Rooms" min="1" value="1" required />
+      <button type="button" id="add-room-page">+</button>
+    </div>
+  
+    <button type="submit">Book Now</button>
+  </form>
+  
+  <style>
+  .input-icon {
+    position: relative;
+  }
+  .input-icon .icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 1.1rem;
+    opacity: 0.6;
+  }
+  
+  .rooms-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  
+  .rooms-control button {
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+    cursor: pointer;
+  }
+  
+  .rooms-control button:hover {
+    background: #2563eb;
+  }
+  </style>
+  
+  <script>
+  document.getElementById('add-room-page').addEventListener('click', () => {
+    const roomsInput = document.getElementById('rooms');
+    roomsInput.value = parseInt(roomsInput.value || 1) + 1;
+  });
+  </script>
+  
 
 <p id="message"></p>
 <button onclick="logout()">Logout</button>

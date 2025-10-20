@@ -175,6 +175,8 @@ class Booking(models.Model):
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE)
     check_in = models.DateField(null=True, blank=True)
     check_out = models.DateField(null=True, blank=True)
+    rooms = models.PositiveIntegerField(default=1)  # new
+    notes = models.TextField(blank=True, null=True)  # new
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -183,6 +185,7 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"{self.customer.phone} → {self.apartment.name} [{self.status}]"
+
 
 
 # ====================================================

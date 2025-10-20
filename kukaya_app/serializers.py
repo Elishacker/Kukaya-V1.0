@@ -177,6 +177,8 @@ class BookingSerializer(serializers.ModelSerializer):
             'status',
             'check_in',
             'check_out',
+            'rooms',   # added
+            'notes',   # added
             'created_at',
         ]
         read_only_fields = ['customer', 'created_at', 'status']
