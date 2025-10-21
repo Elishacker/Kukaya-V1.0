@@ -225,15 +225,11 @@ section.active { display: block; }
 </div>
 
 <script>
-/* ============================
-   Utility & Security Helpers
-   ============================ */
+/* Utility & Security Helpers */
 
 const API_BASE = `http://${window.location.hostname}:8000/api`;
 
-/**
- * Read cookie value safely
- */
+/* Read cookie value safely */
 function getCookie(name) {
   const cookies = document.cookie ? document.cookie.split('; ') : [];
   for (const c of cookies) {
@@ -243,7 +239,7 @@ function getCookie(name) {
   return null;
 }
 
-/**
+/*
  * Centralized fetch wrapper:
  * - includes credentials
  * - adds X-CSRFToken header if available
@@ -267,7 +263,6 @@ async function apiFetch(path, opts = {}) {
   });
 
   if (res.status === 401) {
-    // session expired or not authenticated — redirect to login
     alert('Session expired or not authenticated. Please login.');
     window.location.href = '../index.html';
     return null;
@@ -282,16 +277,12 @@ async function apiFetch(path, opts = {}) {
   }
 }
 
-/**
- * Small safe-escape for when templates need inline text (we prefer textContent elsewhere)
- */
+
 function escapeHTML(str = '') {
   return String(str).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
-/* ============================
-   Auth check & init
-   ============================ */
+/* Auth check & init */
 
 let apartmentsData = [];
 let currentSlide = 0;
@@ -305,16 +296,14 @@ async function checkAuth() {
     window.location.href = '../index.html';
     return null;
   }
-  currentUser = profile.user; // object returned by backend
+  currentUser = profile.user; 
   // Safely display account fields using textContent
   document.getElementById('account-phone').textContent = currentUser.phone || 'N/A';
   document.getElementById('account-role').textContent = currentUser.role || 'User';
   return currentUser;
 }
 
-/* ============================
-   Section navigation
-   ============================ */
+/* Section navigation */
 function showSection(section, event) {
   document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
   document.getElementById(`${section}-section`).classList.add('active');
@@ -322,9 +311,7 @@ function showSection(section, event) {
   if (event) event.currentTarget.classList.add('active');
 }
 
-/* ============================
-   Apartments loading & rendering
-   ============================ */
+/* Apartments loading & rendering */
 
 async function loadApartments(category='all') {
   try {
@@ -404,9 +391,7 @@ document.querySelectorAll('.category-btn').forEach(btn => {
   });
 });
 
-/* ============================
-   Apartment Modal + slider
-   ============================ */
+/* Apartment Modal + slider */
 
 function openApartmentModal(id) {
   const apt = apartmentsData.find(a => a.id === id);
@@ -433,7 +418,7 @@ function openApartmentModal(id) {
     <p>${escapeHTML(apt.details || 'No additional details available.')}</p>
     ${offersHTML}
     <div class="modal-buttons">
-      <button class="btn-book" onclick="bookApartment(${apt.id})">Book Now</button>
+      <button class="btn-book" onclick="bookApartment(${apt.id})">Reserve</button>
       <button class="btn-book" onclick="chatApartment(${apt.id})">Chat</button>
       <button class="btn-close" onclick="closeModal()">Close</button>
     </div>
@@ -463,9 +448,7 @@ function closeModal() {
   document.getElementById('apartment-modal').classList.remove('active');
 }
 
-/* ============================
-   Booking Flow
-   ============================ */
+/* Booking Flow */
 
 function bookApartment(id) {
   closeModal();
@@ -507,44 +490,23 @@ async function submitBooking(e) {
     return;
   }
 
-  const id = document.getElementById('booking-apartment-id').value;
-  const payload = {
-    apartment: id,
+  const bookingData = {
+    apartment: document.getElementById('booking-apartment-id').value,
     checkin: document.getElementById('checkin').value,
     checkout: document.getElementById('checkout').value,
-    notes: document.getElementById('notes').value || '',
-    // include rooms as optional — backend can ignore or use
-    rooms: parseInt(document.getElementById('rooms').value || '1', 10)
+    rooms: parseInt(document.getElementById('rooms').value || '1', 10),
+    notes: document.getElementById('notes').value || ''
   };
 
-  // Basic client-side validation
-  if (!payload.checkin || !payload.checkout) {
-    alert('Please select check-in and check-out dates.');
-    return;
-  }
+  // Store booking temporarily in sessionStorage
+  sessionStorage.setItem('pendingBooking', JSON.stringify(bookingData));
 
-  try {
-    const res = await apiFetch('/bookings/add/', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    if (!res) return; // apiFetch already handled redirect on 401
-    if (res.ok) {
-      alert('Booking submitted successfully!');
-      closeBookingForm();
-      loadBookings();
-    } else {
-      alert(res.error || 'Booking failed.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Network error during booking.');
-  }
+  // Redirect to payment page
+  window.location.href = 'payment.html';
 }
 
-/* ============================
-   Bookings & Account
-   ============================ */
+
+/* Bookings & Account */
 
 async function loadBookings() {
   try {
@@ -594,13 +556,11 @@ async function loadAccount() {
   }
 }
 
-/* ============================
-   Auth & Logout
-   ============================ */
+/* Auth & Logout */
 
    async function logout() {
   try {
-    // 1️⃣ Call backend logout if endpoint exists
+    // Call backend logout if endpoint exists
     await fetch(`http://${window.location.hostname}:8000/api/auth/logout/`, {
       method: 'POST',
       credentials: 'include', // send cookies
@@ -610,16 +570,16 @@ async function loadAccount() {
       }
     }).catch(()=>null); // ignore if endpoint missing
 
-    // 2️⃣ Clear all sessionStorage & localStorage
+    // Clear all sessionStorage & localStorage
     sessionStorage.clear();
     localStorage.clear();
 
-    // 3️⃣ Clear cookies (simple way — may need backend support for HttpOnly cookies)
+    // Clear cookies (simple way — may need backend support for HttpOnly cookies)
     document.cookie.split(";").forEach(function(c) { 
       document.cookie = c.trim().split("=")[0] + '=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/'; 
     });
 
-    // 4️⃣ Redirect to login/index page
+    // Redirect to login/index page
     window.location.href = '../index.html';
   } catch(err){
     console.error("Logout error:", err);
@@ -639,20 +599,16 @@ function getCSRFToken() {
 }
 
 
-/* ============================
-   Misc: chat placeholder
-   ============================ */
+/* Misc: chat placeholder */
 function chatApartment(id) {
   alert(`Chat feature coming soon for Apartment ID ${id}`);
 }
 
-/* ============================
-   Init sequence (auth first)
-   ============================ */
+/* Init sequence (auth first) */
 (async () => {
   const user = await checkAuth();
-  if (!user) return; // checkAuth will redirect if not authenticated
-  // Now load application data
+  if (!user) return; 
+
   await loadApartments(selectedCategory);
   await loadBookings();
   await loadAccount();

@@ -80,9 +80,9 @@
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()  // CSRF token added
+            "X-CSRFToken": getCSRFToken()
           },
-          credentials: "include", // send cookies
+          credentials: "include",
           body: JSON.stringify({ phone, otp: enteredOTP })
         });
 
@@ -133,7 +133,7 @@
           method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()  // CSRF token added
+            "X-CSRFToken": getCSRFToken()
           },
           credentials: "include",
           body: JSON.stringify({ phone })

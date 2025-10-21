@@ -5,18 +5,14 @@ from django.utils import timezone # type: ignore
 import base64
 
 
-# ===========================================================
 # USER SERIALIZER
-# ===========================================================
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'phone', 'role']
 
 
-# ===========================================================
 # APARTMENT IMAGE SERIALIZER
-# ===========================================================
 class ApartmentImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
 
@@ -31,9 +27,7 @@ class ApartmentImageSerializer(serializers.ModelSerializer):
         return None
 
 
-# ===========================================================
 # APARTMENT SERIALIZER
-# ===========================================================
 class ApartmentSerializer(serializers.ModelSerializer):
     owner_phone = serializers.CharField(source='owner.phone', read_only=True)
     images = ApartmentImageSerializer(many=True, read_only=True)
@@ -79,9 +73,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['owner', 'created_at', 'updated_at']
 
-    # -----------------------------------------------------------
     # VALIDATION
-    # -----------------------------------------------------------
     def validate(self, attrs):
         service_type = attrs.get('service_type')
 
@@ -111,9 +103,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    # -----------------------------------------------------------
     # CREATE METHOD
-    # -----------------------------------------------------------
     def create(self, validated_data):
         request = self.context.get('request')
         user = getattr(request, 'user', None)
@@ -153,9 +143,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
         return apartment
 
 
-# ===========================================================
 # BOOKING SERIALIZER
-# ===========================================================
 class BookingSerializer(serializers.ModelSerializer):
     apartment_name = serializers.CharField(source='apartment.name', read_only=True)
     location = serializers.CharField(source='apartment.location', read_only=True)

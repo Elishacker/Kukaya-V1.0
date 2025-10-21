@@ -1,11 +1,11 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from django.contrib.auth import authenticate, get_user_model, login
-from django.contrib.auth import logout as django_logout
-from django.db import transaction
-from django.core.files.base import ContentFile
-from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes # type: ignore
+from rest_framework.permissions import IsAuthenticated, AllowAny # type: ignore
+from rest_framework.response import Response # type: ignore
+from django.contrib.auth import authenticate, get_user_model, login # type: ignore
+from django.contrib.auth import logout as django_logout # type: ignore
+from django.db import transaction # type: ignore
+from django.core.files.base import ContentFile # type: ignore
+from django.utils import timezone # type: ignore
 from .models import Apartment, Booking, PhoneOTP, ApartmentImage
 from .serializers import (
     UserSerializer,
@@ -17,9 +17,7 @@ import random, base64, json
 
 User = get_user_model()
 
-# ===========================================================
-# 1️⃣ REQUEST OTP
-# ===========================================================
+#  REQUEST OTP
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def request_otp(request):
@@ -34,9 +32,7 @@ def request_otp(request):
     return Response({"ok": True, "message": "OTP sent successfully (dev mode)", "otp": otp})
 
 
-# ===========================================================
-# 2️⃣ VERIFY OTP & LOGIN / LOGOUT/ REGISTER
-# ===========================================================
+#  VERIFY OTP & LOGIN / LOGOUT/ REGISTER
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
@@ -58,7 +54,7 @@ def verify_otp(request):
     otp_obj.verified = True
     otp_obj.save(update_fields=["verified"])
 
-    login(request, user)  # ✅ bind session correctly
+    login(request, user) 
 
     return Response({
         "ok": True,
@@ -69,13 +65,11 @@ def verify_otp(request):
 
 @api_view(['POST'])
 def logout(request):
-    django_logout(request)  # clears session
+    django_logout(request) 
     return Response({"ok": True})
 
 
-# ===========================================================
-# 3️⃣ ADMIN LOGIN
-# ===========================================================
+#  ADMIN LOGIN
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_login(request):
@@ -89,14 +83,12 @@ def admin_login(request):
     if not user or user.role != "admin":
         return Response({"ok": False, "error": "Invalid admin credentials."}, status=403)
 
-    login(request, user)  #  ensure admin session binding
+    login(request, user)
 
     return Response({"ok": True, "user": UserSerializer(user).data, "message": "Admin login successful."})
 
 
-# ===========================================================
-# 4️⃣ ADD APARTMENT
-# ===========================================================
+#  ADD APARTMENT
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -169,9 +161,7 @@ def add_apartment(request):
     })
 
 
-# ===========================================================
-# 5️⃣ EDIT APARTMENT
-# ===========================================================
+#  EDIT APARTMENT
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -208,9 +198,7 @@ def edit_apartment(request, apartment_id):
     return Response({"ok": False, "errors": serializer.errors}, status=400)
 
 
-# ===========================================================
-# 6️⃣ OWNER APARTMENTS
-# ===========================================================
+#  OWNER APARTMENTS
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owner_apartments(request):
@@ -223,9 +211,7 @@ def owner_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-# ===========================================================
-# 7️⃣ LIST APARTMENTS
-# ===========================================================
+#  LIST APARTMENTS
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_apartments(request):
@@ -246,9 +232,7 @@ def list_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-# ===========================================================
-# 8️⃣ BOOK APARTMENT
-# ===========================================================
+#  BOOK APARTMENT
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def book_apartment(request):
@@ -267,9 +251,7 @@ def book_apartment(request):
     return Response({"ok": True, "booking": BookingSerializer(booking).data})
 
 
-# ===========================================================
-# 9️⃣ BOOKING HISTORY
-# ===========================================================
+#  BOOKING HISTORY
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def booking_history(request):
@@ -278,9 +260,7 @@ def booking_history(request):
     return Response({"ok": True, "bookings": serializer.data})
 
 
-# ===========================================================
-# 🔟 ADMIN: LIST USERS
-# ===========================================================
+# ADMIN: LIST USERS
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def admin_list_users(request):
@@ -291,9 +271,7 @@ def admin_list_users(request):
     return Response({"ok": True, "users": serializer.data})
 
 
-# ===========================================================
-# 1️⃣1️⃣ ADMIN: LIST ALL APARTMENTS
-# ===========================================================
+#  ADMIN: LIST ALL APARTMENTS
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def admin_list_apartments(request):
@@ -304,9 +282,7 @@ def admin_list_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-# ===========================================================
-# 1️⃣2️⃣ USER PROFILE
-# ===========================================================
+#  USER PROFILE
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
@@ -315,9 +291,7 @@ def user_profile(request):
     return Response({"ok": True, "user": serializer.data})
 
 
-# ===========================================================
-# 1️⃣3️⃣ UPDATE PROFILE
-# ===========================================================
+#  UPDATE PROFILE
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def update_profile(request):

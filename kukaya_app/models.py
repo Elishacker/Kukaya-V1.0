@@ -3,9 +3,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager # type: ign
 from django.utils import timezone # type: ignore
 import random
 
-# ====================================================
 #  CUSTOM USER MANAGER
-# ====================================================
 
 class CustomUserManager(BaseUserManager):
     """Manager for custom user model using phone as username."""
@@ -36,9 +34,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(phone, password, **extra_fields)
 
 
-# ====================================================
 #  CUSTOM USER MODEL
-# ====================================================
 
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -60,9 +56,7 @@ class User(AbstractUser):
         return f"{self.phone} ({self.role})"
 
 
-# ====================================================
 #  APARTMENT MODEL
-# ====================================================
 
 CATEGORY_CHOICES = [
     ("apartment", "Apartment"),
@@ -113,9 +107,9 @@ class Apartment(models.Model):
     def __str__(self):
         return f"{self.name} - {self.category} ({self.owner.phone})"
 
-    # ===========================================================
+
     #  HELPER METHODS
-    # ===========================================================
+    
     @property
     def image_url(self):
         """Return full URL for the main image."""
@@ -141,9 +135,7 @@ class Apartment(models.Model):
         return []
 
 
-# ====================================================
 #  APARTMENT IMAGE MODEL
-# ====================================================
 
 class ApartmentImage(models.Model):
     apartment = models.ForeignKey(
@@ -160,9 +152,7 @@ class ApartmentImage(models.Model):
         return f"Image for {self.apartment.name}"
 
 
-# ====================================================
 #  BOOKING MODEL
-# ====================================================
 
 class Booking(models.Model):
     STATUS_CHOICES = (
@@ -188,9 +178,7 @@ class Booking(models.Model):
 
 
 
-# ====================================================
 #  PHONE OTP MODEL
-# ====================================================
 
 class PhoneOTP(models.Model):
     phone = models.CharField(max_length=15, unique=True)
