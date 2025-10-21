@@ -57,14 +57,14 @@ section.active { display: block; }
     <input name="name" placeholder="Property Name" required />
     <input name="location" placeholder="Location" required />
 
-    <label>Price Type</label>
+    <label>Price Type:</label>
     <div class="inline-options">
       <label><input type="radio" name="price_type" value="night" required> Night</label>
       <label><input type="radio" name="price_type" value="month" required> Month</label>
     </div>
     <input name="price_amount" type="number" placeholder="Enter Amount" required />
 
-    <label>Category</label>
+    <label>Category:</label>
     <select name="category" id="category" required>
       <option value="">Select Category</option>
       <option value="apartment">Apartment</option>
@@ -73,26 +73,29 @@ section.active { display: block; }
       <option value="office">Office</option>
     </select>
 
-    <label>Mode of Premise</label>
+    <label>Mode of Premise:</label>
     <select name="service_type" id="service_type" required>
       <option value="">Select Mode</option>
     </select>
 
     <div id="dynamic-fields"></div>
 
-    <label>Nearby Locations</label>
+    <label>Nearby Locations:</label>
     <input name="nearby_locations" placeholder="Comma-separated nearby landmarks" />
 
-    <label>Room Nature</label>
+    <label>More Details:</label>
+    <input name="details" placeholder="Distance from SGR" />
+
+    <label>Room Nature:</label>
     <select name="room_nature" required>
-      <option value="">Select Room Type</option>
-      <option value="self-contained">Self-contained</option>
+      <option value="">Select Room Type:</option>
+      <option value="self-contained">Self-contained:</option>
       <option value="single">Single</option>
       <option value="master">Master</option>
       <option value="studio">Studio</option>
     </select>
 
-    <label>Other Offers</label>
+    <label>Other Offers:</label>
     <div class="inline-options-wrap">
       <label><input type="checkbox" name="offers" value="wifi"> WiFi</label>
       <label><input type="checkbox" name="offers" value="breakfast"> Breakfast</label>
@@ -108,7 +111,7 @@ section.active { display: block; }
       <label><input type="checkbox" name="offers" value="fridge"> Fridge</label>
     </div>
 
-    <label>Upload up to 5 images</label>
+    <label>Upload up to 5 images:</label>
     <input type="file" name="images" accept="image/*" multiple />
 
     <button type="submit">Add Property</button>
@@ -118,10 +121,11 @@ section.active { display: block; }
 
 <div class="floating-add" onclick="showSection('add')">➕</div>
 
+<!-- Bottom Navigation -->
 <div class="bottom-nav">
-  <button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
-  <button onclick="alert('Bookings coming soon!')"><span>📄</span>Bookings</button>
-  <button onclick="alert('Account coming soon!')"><span>👤</span>Account</button>
+  <button class="active" onclick="window.location.href='dashboard.html'"><span>🏠</span>Home</button>
+  <button onclick="window.location.href='list-booking.html'"><span>📄</span>Bookings</button>
+  <button onclick="window.location.href='../account.html'"><span>👤</span>Account</button>
 </div>
 
 <script>
@@ -156,52 +160,53 @@ const categoryModes={
 const dynamicFieldsHTML={
   apartment:`
     <div id="standalone-fields">
-      <input name="num_apartments" type="number" placeholder="Number of Apartments" /><br>
-      <input name="apartment_names" placeholder="Apartment Names (comma-separated)" /><br>
-      <input name="num_rooms" type="number" placeholder="Rooms per Apartment" />
+      
+      
+      <input name="num_rooms" type="number" placeholder="Number of Rooms" />
     </div>
     <div id="ghorofa-fields">
-      <input name="num_apartments" type="number" placeholder="Number of Apartments" />
-      <input name="apartment_names" placeholder="Apartment Names (comma-separated)" />
+      
+      
       <input name="num_floors" type="number" placeholder="Number of Floors" />
-      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+      <input name="rooms_per_floor" placeholder="Number of Rooms" />
     </div>
   `,
   hotel:`
     <div id="standalone-fields">
-      <input name="num_rooms" type="number" placeholder="Number of Standalone Rooms" />
-      <input name="hotel_names" placeholder="Hotel Names (comma-separated)" /><br>
-      <input name="num_rooms" type="number" placeholder="Rooms per Hotel" />
+      
+      
+      <input name="num_rooms" type="number" placeholder="Number of Rooms" />
     </div>
     <div id="ghorofa-fields">
-      <input name="num_rooms" type="number" placeholder="Number of Rooms" />
+      
       <input name="num_floors" type="number" placeholder="Number of Floors" />
-      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+      <input name="rooms_per_floor" placeholder="Number of Rooms" />
     </div>
   `,
   lodge:`
     <div id="standalone-fields">
-      <input name="num_lodge" type="number" placeholder="Number of Offices" />
-      <input name="lodge_names" placeholder="Lodge Names (comma-separated)" /><br>
-      <input name="num_rooms" type="number" placeholder="Rooms per Lodge" />
+      
+      <input name="num_rooms" type="number" placeholder="Number of Rooms" />
     </div>
     <div id="ghorofa-fields">
-      <input name="num_lodge" type="number" placeholder="Number of Lodge" />
+      
       <input name="num_floors" type="number" placeholder="Number of Floors" />
-      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+      <input name="rooms_per_floor" placeholder="Number of Rooms" />
     </div>
   `
   ,
   office:`
     <div id="standalone-fields">
-      <input name="num_offices" type="number" placeholder="Number of Offices" /><br>
-      <input name="office_names" placeholder="Office Names (comma-separated)" /><br>
-      <input name="num_rooms" type="number" placeholder="Rooms per Office" />
+      
+      
+      <input name="num_rooms" type="number" placeholder="Number of Rooms" />
+      <input name="office_size" type="text" placeholder="Squre Metres" />
     </div>
     <div id="ghorofa-fields">
-      <input name="num_offices" type="number" placeholder="Number of Offices" />
+      
       <input name="num_floors" type="number" placeholder="Number of Floors" />
-      <input name="rooms_per_floor" placeholder="Rooms per Floor (comma-separated)" />
+      <input name="rooms_per_floor" placeholder="Number of Offices" />
+      <input name="office_size" type="text" placeholder="Squre Metres" />
     </div>
   `
 };
@@ -244,6 +249,7 @@ document.getElementById("addApartmentForm").addEventListener("submit",async e=>{
     room_nature: form.room_nature.value,
     category: form.category.value,
     nearby_locations: form.nearby_locations.value||"",
+    details: form.details.value.trim(),
     offers:Array.from(document.querySelectorAll('input[name="offers"]:checked')).map(o=>o.value),
     dynamic_fields:{},
     images:[]

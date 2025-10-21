@@ -414,8 +414,8 @@ function openApartmentModal(id) {
     </div>
     <h3>${escapeHTML(apt.name || '')}</h3>
     <p><strong>Location:</strong> ${escapeHTML(apt.location || '')}</p>
-    <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price || '')}/=</p>
-    <p>${escapeHTML(apt.details || 'No additional details available.')}</p>
+    <p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price || '')}/= /Night</p>
+    <p>${escapeHTML(apt.details || 'No estimate distance')} From SGR</p>
     ${offersHTML}
     <div class="modal-buttons">
       <button class="btn-book" onclick="bookApartment(${apt.id})">Reserve</button>

@@ -1,18 +1,21 @@
-from rest_framework import serializers # type: ignore
+from rest_framework import serializers
 from .models import User, Apartment, ApartmentImage, Booking
-from django.core.files.base import ContentFile # type: ignore
-from django.utils import timezone # type: ignore
-import base64
+from django.core.files.base import ContentFile
+from django.utils import timezone
+import base64, json
 
-
+# -----------------------------
 # USER SERIALIZER
+# -----------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'phone', 'role']
 
 
+# -----------------------------
 # APARTMENT IMAGE SERIALIZER
+# -----------------------------
 class ApartmentImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
 
@@ -27,19 +30,14 @@ class ApartmentImageSerializer(serializers.ModelSerializer):
         return None
 
 
+# -----------------------------
 # APARTMENT SERIALIZER
+# -----------------------------
 class ApartmentSerializer(serializers.ModelSerializer):
     owner_phone = serializers.CharField(source='owner.phone', read_only=True)
     images = ApartmentImageSerializer(many=True, read_only=True)
 
-    # JSON field for offers
-    offers = serializers.ListField(
-        child=serializers.CharField(),
-        required=False,
-        allow_empty=True
-    )
-
-    # Base64 image upload
+    # Input for Base64 images
     uploaded_images = serializers.ListField(
         child=serializers.CharField(),
         write_only=True,
@@ -47,82 +45,102 @@ class ApartmentSerializer(serializers.ModelSerializer):
         help_text="List of Base64 encoded images"
     )
 
+    # Offers as list
+    offers = serializers.ListField(
+        child=serializers.CharField(),
+        required=False,
+        allow_empty=True
+    )
+
+    # rooms_per_floor as list for API, stored as string in DB
+    rooms_per_floor = serializers.ListField(
+        child=serializers.IntegerField(), required=False, allow_empty=True
+    )
+
     class Meta:
         model = Apartment
         fields = [
-            'id',
-            'name',
-            'details',
-            'location',
-            'price',
-            'category',
-            'owner',
-            'owner_phone',
-            'images',
-            'uploaded_images',
-            'is_active',
-            'service_type',
-            'num_apartments',
-            'apartment_names',
-            'num_rooms',
-            'num_floors',
-            'rooms_per_floor',
-            'offers',
-            'created_at',
-            'updated_at',
+            'id', 'name', 'details', 'location', 'price', 'category',
+            'owner', 'owner_phone', 'images', 'uploaded_images',
+            'is_active', 'service_type', 'num_apartments', 'num_rooms',
+            'num_floors', 'rooms_per_floor', 'offers', 'nearby_locations',
+            'created_at', 'updated_at',
         ]
         read_only_fields = ['owner', 'created_at', 'updated_at']
 
+    # -----------------------------
     # VALIDATION
+    # -----------------------------
     def validate(self, attrs):
         service_type = attrs.get('service_type')
+        errors = {}
 
         if service_type == 'standalone':
-            required_fields = ['num_apartments', 'apartment_names', 'num_rooms']
+            if not attrs.get('num_apartments') and not attrs.get('num_rooms'):
+                errors['num_apartments'] = "num_apartments or num_rooms is required for standalone."
         elif service_type == 'ghorofa':
-            required_fields = ['num_floors', 'rooms_per_floor']
+            if not attrs.get('num_floors'):
+                errors['num_floors'] = "num_floors is required for ghorofa."
+            if not attrs.get('rooms_per_floor'):
+                errors['rooms_per_floor'] = "rooms_per_floor is required for ghorofa."
         else:
-            raise serializers.ValidationError({
-                'service_type': 'Must be either "standalone" or "ghorofa".'
-            })
+            errors['service_type'] = 'service_type must be either "standalone" or "ghorofa".'
 
-        errors = {}
-        for field in required_fields:
-            value = attrs.get(field)
-            if value in [None, '']:
-                errors[field] = f"{field} is required for service_type '{service_type}'."
+        if attrs.get('category') not in ['apartment', 'hotel', 'lodge', 'office']:
+            errors['category'] = 'category must be one of: apartment, hotel, lodge, office.'
 
         if errors:
             raise serializers.ValidationError(errors)
 
-        # Category check
-        if attrs.get('category') not in ['apartment', 'hotel', 'lodge', 'office']:
-            raise serializers.ValidationError({
-                'category': 'Category must be one of: apartment, hotel, lodge, office.'
-            })
-
         return attrs
 
+    # -----------------------------
+    # INTERNAL VALUE PARSING
+    # -----------------------------
+    def to_internal_value(self, data):
+        dynamic = data.pop('dynamic_fields', {})
+        if isinstance(dynamic, str):
+            try:
+                dynamic = json.loads(dynamic)
+            except Exception:
+                dynamic = {}
+        data.update(dynamic)
+
+        # Convert rooms_per_floor string to list
+        if "rooms_per_floor" in data:
+            if isinstance(data["rooms_per_floor"], str):
+                data["rooms_per_floor"] = [
+                    int(x.strip()) for x in data["rooms_per_floor"].split(",") if x.strip().isdigit()
+                ]
+            elif not isinstance(data["rooms_per_floor"], list):
+                data["rooms_per_floor"] = []
+
+        # Parse nearby_locations
+        if "nearby_locations" in data and isinstance(data["nearby_locations"], str):
+            data["nearby_locations"] = [x.strip() for x in data["nearby_locations"].split(",") if x.strip()]
+
+        # Parse offers if string
+        if "offers" in data and isinstance(data["offers"], str):
+            try:
+                data["offers"] = json.loads(data["offers"])
+            except Exception:
+                data["offers"] = []
+
+        return super().to_internal_value(data)
+
+    # -----------------------------
     # CREATE METHOD
+    # -----------------------------
     def create(self, validated_data):
         request = self.context.get('request')
         user = getattr(request, 'user', None)
-
         uploaded_images = validated_data.pop('uploaded_images', [])
 
-        # Assign owner
         validated_data['owner'] = user
 
-        # Ensure comma-separated fields are clean
-        if validated_data.get('apartment_names') and isinstance(validated_data['apartment_names'], str):
-            validated_data['apartment_names'] = ','.join(
-                [x.strip() for x in validated_data['apartment_names'].split(',') if x.strip()]
-            )
-
-        if validated_data.get('rooms_per_floor') and isinstance(validated_data['rooms_per_floor'], str):
-            validated_data['rooms_per_floor'] = ','.join(
-                [x.strip() for x in validated_data['rooms_per_floor'].split(',') if x.strip()]
-            )
+        # Convert rooms_per_floor list back to string for DB
+        if 'rooms_per_floor' in validated_data and isinstance(validated_data['rooms_per_floor'], list):
+            validated_data['rooms_per_floor'] = ','.join(map(str, validated_data['rooms_per_floor']))
 
         apartment = Apartment.objects.create(**validated_data)
 
@@ -142,8 +160,19 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         return apartment
 
+    # -----------------------------
+    # REPRESENTATION (OUTPUT)
+    # -----------------------------
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        value = getattr(instance, 'rooms_per_floor', '')
+        ret['rooms_per_floor'] = [int(x.strip()) for x in value.split(',') if x.strip().isdigit()] if value else []
+        return ret
 
+
+# -----------------------------
 # BOOKING SERIALIZER
+# -----------------------------
 class BookingSerializer(serializers.ModelSerializer):
     apartment_name = serializers.CharField(source='apartment.name', read_only=True)
     location = serializers.CharField(source='apartment.location', read_only=True)
@@ -154,19 +183,8 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id',
-            'customer',
-            'apartment',
-            'apartment_name',
-            'location',
-            'price',
-            'owner_phone',
-            'category',
-            'status',
-            'check_in',
-            'check_out',
-            'rooms',   # added
-            'notes',   # added
-            'created_at',
+            'id', 'customer', 'apartment', 'apartment_name', 'location',
+            'price', 'owner_phone', 'category', 'status', 'check_in',
+            'check_out', 'rooms', 'notes', 'created_at',
         ]
         read_only_fields = ['customer', 'created_at', 'status']
