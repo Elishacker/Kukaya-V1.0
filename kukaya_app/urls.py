@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path # type: ignore
 from . import views
 
 app_name = "kukaya_app"  # Optional: namespacing for reverse URL lookups
