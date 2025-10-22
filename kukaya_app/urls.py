@@ -26,7 +26,7 @@ urlpatterns = [
     # Booking
     path('bookings/add/', views.book_apartment, name='book-apartment'),
     path('bookings/history/', views.booking_history, name='booking-history'),
-    # path('bookings/payments/', views.payments, name='payment'),
+    path('bookings/payments/', views.make_payment, name='payment'),
 
     # Admin Endpoints
     path('admin/users/', views.admin_list_users, name='admin-list-users'),

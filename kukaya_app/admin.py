@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, Apartment, Booking, PhoneOTP
+from .models import User, Apartment, Booking, PhoneOTP, Payment
 
 # ----------------------
 # Custom User Admin
@@ -25,3 +25,4 @@ admin.site.register(User, UserAdmin)
 admin.site.register(Apartment)
 admin.site.register(Booking)
 admin.site.register(PhoneOTP)
+admin.site.register(Payment)

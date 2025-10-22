@@ -1,6 +1,6 @@
-from django.db import models  # type: ignore
-from django.contrib.auth.models import AbstractUser, BaseUserManager  # type: ignore
-from django.utils import timezone  # type: ignore
+from django.db import models
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.utils import timezone
 import random
 
 # ---------------------------
@@ -26,9 +26,9 @@ class CustomUserManager(BaseUserManager):
         extra_fields.setdefault("is_active", True)
         extra_fields.setdefault("role", "admin")
 
-        if extra_fields.get("is_staff") is not True:
+        if not extra_fields.get("is_staff"):
             raise ValueError("Superuser must have is_staff=True.")
-        if extra_fields.get("is_superuser") is not True:
+        if not extra_fields.get("is_superuser"):
             raise ValueError("Superuser must have is_superuser=True.")
 
         return self.create_user(phone, password, **extra_fields)
@@ -73,8 +73,6 @@ SERVICE_CHOICES = [
 ]
 
 class Apartment(models.Model):
-    """Represents an apartment, hotel room, or office listing."""
-
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="apartments")
     name = models.CharField(max_length=255)
     details = models.TextField(blank=True)
@@ -84,25 +82,19 @@ class Apartment(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default="apartment")
     service_type = models.CharField(max_length=20, choices=SERVICE_CHOICES, default="standalone")
 
-    # -----------------------
     # Standalone fields
-    # -----------------------
     num_apartments = models.PositiveIntegerField(null=True, blank=True, help_text="Required if standalone")
     num_rooms = models.PositiveIntegerField(null=True, blank=True, help_text="Rooms per standalone unit")
     apartment_names = models.TextField(blank=True, null=True, help_text="Comma-separated apartment names")
 
-    # -----------------------
     # Ghorofa fields
-    # -----------------------
     num_floors = models.PositiveIntegerField(null=True, blank=True)
     rooms_per_floor = models.TextField(blank=True, null=True, help_text="Comma-separated room counts per floor")
 
-    # -----------------------
     # Other dynamic fields
-    # -----------------------
     nearby_locations = models.JSONField(default=list, blank=True, help_text="List of nearby landmarks")
     offers = models.JSONField(default=list, blank=True, help_text="List of offers/features")
-    
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -112,17 +104,13 @@ class Apartment(models.Model):
     def __str__(self):
         return f"{self.name} - {self.category} ({self.owner.phone})"
 
-    # -----------------------
-    # Helper properties
-    # -----------------------
+    # Helper methods
     def get_rooms_per_floor_list(self):
-        """Return room numbers per floor as list of ints."""
         if not self.rooms_per_floor:
             return []
         return [int(x.strip()) for x in self.rooms_per_floor.split(",") if x.strip().isdigit()]
 
     def get_apartment_names_list(self):
-        """Return apartment names as list."""
         if not self.apartment_names:
             return []
         return [x.strip() for x in self.apartment_names.split(",") if x.strip()]
@@ -184,9 +172,6 @@ class PhoneOTP(models.Model):
     def __str__(self):
         return f"{self.phone} -> {self.otp} ({'✔' if self.verified else '✖'})"
 
-    # -----------------------
-    # OTP Logic
-    # -----------------------
     def generate_otp(self, length=4):
         length = 6 if length not in [4, 6] else length
         self.otp = "".join([str(random.randint(0, 9)) for _ in range(length)])
@@ -212,3 +197,37 @@ class PhoneOTP(models.Model):
     def is_expired(self):
         elapsed = (timezone.now() - self.created_at).total_seconds()
         return elapsed > self.expires_in * 60
+
+
+# ---------------------------
+# PAYMENT MODEL
+# ---------------------------
+class Payment(models.Model):
+    PAYMENT_METHOD_CHOICES = (
+        ("mobile", "Mobile Payment"),
+        ("bank", "Bank Transfer"),
+    )
+
+    phone = models.CharField(max_length=15)  # Payer's phone number
+    apartment_name = models.CharField(max_length=255)
+    rooms = models.PositiveIntegerField(default=1)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES)
+    total_amount = models.DecimalField(max_digits=12, decimal_places=2)
+    days_booked = models.PositiveIntegerField(default=1)
+
+    # Optional link to Booking
+    booking = models.ForeignKey(
+        Booking,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="payments"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Payment by {self.phone} for {self.apartment_name} ({self.total_amount} Tzs)"

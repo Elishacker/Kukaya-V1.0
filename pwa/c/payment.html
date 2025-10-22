@@ -12,7 +12,6 @@
     display: flex;
     justify-content: center;
   }
-
   .container {
     width: 100%;
     max-width: 420px;
@@ -21,75 +20,29 @@
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   }
-
-  h2 {
-    text-align: center;
-    color: #0033a0;
-    margin-bottom: 20px;
+  h2 { text-align: center; color: #0033a0; margin-bottom: 20px; }
+  label { display: block; font-weight: 500; margin-top: 12px; }
+  input[type="text"], input[type="number"], select {
+    width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 8px; font-size: 15px;
   }
-
-  label {
-    display: block;
-    font-weight: 500;
-    margin-top: 12px;
-  }
-
-  input[type="text"],
-  input[type="number"],
-  select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 6px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 15px;
-  }
-
   .mobile-options {
-    margin-top: 8px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background: #fafafa;
-    display: none;
+    margin-top: 8px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa; display: none;
   }
-
-  .mobile-options label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: normal;
-    margin-top: 6px;
-  }
-
-  button {
-    margin-top: 25px;
-    width: 100%;
-    padding: 12px;
-    font-size: 16px;
-    background: #0033a0;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: 0.3s;
-  }
-
-  button:hover {
-    background: #00267a;
-  }
-
-  .amount {
-    font-weight: bold;
-    color: #333;
-  }
+  .mobile-options label { display: flex; align-items: center; gap: 8px; font-weight: normal; margin-top: 6px; }
+  button { margin-top: 25px; width: 100%; padding: 12px; font-size: 16px; background: #0033a0; color: white; border: none; border-radius: 8px; cursor: pointer; transition: 0.3s; }
+  button:hover { background: #00267a; }
+  .amount { font-weight: bold; color: #333; }
 </style>
 </head>
 <body>
 
 <div class="container">
   <h2>Complete Your Payment</h2>
-  <p><strong>Phone:</strong> <span id="user-phone"></span></p>
+  <p><strong>Apartment:</strong> <span id="apartment-name">-</span></p>
+  <p><strong>Check-in:</strong> <span id="checkin-date">-</span></p>
+  <p><strong>Check-out:</strong> <span id="checkout-date">-</span></p>
+  <p><strong>Rooms:</strong> <span id="rooms-count">-</span></p>
+  <p><strong>Phone:</strong> <span id="user-phone">N/A</span></p>
 
   <form id="payment-form">
     <label>Payment Method:</label>
@@ -119,95 +72,101 @@
     </div>
 
     <label>Total Amount (TZS):</label>
-    <input type="number" id="payment-amount" readonly class="amount" title="Payment Amount" placeholder="Enter amount" />
+    <input type="number" id="total-cost" readonly class="amount" placeholder="Amount will appear here" />
 
     <button type="submit">Finish Booking & Pay</button>
   </form>
 </div>
 
 <script>
-const API_BASE = `http://${window.location.hostname}:8000/api`;
-const bookingData = JSON.parse(sessionStorage.getItem('pendingBooking') || '{}');
-const userPhone = sessionStorage.getItem('userPhone') || 'N/A';
-document.getElementById('user-phone').textContent = userPhone;
-
-// Auto-calculate amount
-function calculateTotal() {
-  const price = parseFloat(bookingData.price_per_night || bookingData.cost || 0);
-  const days = parseInt(bookingData.days || bookingData.nights || 1);
-  const total = price * days;
-  document.getElementById('payment-amount').value = total.toFixed(2);
-}
-calculateTotal();
-
-// Payment method change handler
-const methodSelect = document.getElementById('payment-method');
-methodSelect.addEventListener('change', () => {
-  document.getElementById('mobile-options').style.display =
-    methodSelect.value === 'Mobile' ? 'block' : 'none';
-  document.getElementById('bank-options').style.display =
-    methodSelect.value === 'Bank' ? 'block' : 'none';
-});
-
-// CSRF helper
-function getCookie(name) {
-  const cookies = document.cookie ? document.cookie.split('; ') : [];
-  for (const c of cookies) {
-    const [k, ...v] = c.split('=');
-    if (k === name) return decodeURIComponent(v.join('='));
-  }
-  return null;
-}
-
-async function apiFetch(path, opts={}) {
-  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
-  const headers = new Headers(opts.headers || {});
-  headers.set('Accept','application/json');
-  if (opts.body && !(opts.body instanceof FormData)) headers.set('Content-Type','application/json');
-  const csrftoken = getCookie('csrftoken');
-  if (csrftoken) headers.set('X-CSRFToken', csrftoken);
-  const res = await fetch(url, {...opts, headers, credentials:'include'});
-  const text = await res.text();
-  try { return JSON.parse(text||'{}'); } catch { return {ok:false,error:text}; }
-}
-
-document.getElementById('payment-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const method = document.getElementById('payment-method').value;
-  let provider = null;
-
-  if (method === 'Mobile') {
-    const checked = document.querySelector('input[name="mobile-operator"]:checked');
-    if (!checked) return alert('Please select a mobile operator');
-    provider = checked.value;
-  } else if (method === 'Bank') {
-    const bank = document.getElementById('bank-name').value;
-    if (!bank) return alert('Please select a bank');
-    provider = bank;
-  } else {
-    return alert('Select a payment method');
+document.addEventListener('DOMContentLoaded', () => {
+  const bookingData = JSON.parse(sessionStorage.getItem('pendingBooking') || '{}');
+  if (!bookingData || !bookingData.apartmentId) {
+    alert('No booking found. Please start your booking again.');
+    window.location.href = 'apartment.html';
+    return;
   }
 
-  const amount = parseFloat(document.getElementById('payment-amount').value);
+  const userPhone = sessionStorage.getItem('userPhone') || 'N/A';
+  document.getElementById('user-phone').textContent = userPhone;
+  document.getElementById('apartment-name').textContent = bookingData.apartmentName || '-';
+  document.getElementById('checkin-date').textContent = bookingData.checkin || '-';
+  document.getElementById('checkout-date').textContent = bookingData.checkout || '-';
+  document.getElementById('rooms-count').textContent = bookingData.rooms || 1;
 
-  const payload = {
-    booking: bookingData,
-    payment: { method, provider, amount }
-  };
+  // Calculate nights and total amount
+  const checkin = new Date(bookingData.checkin);
+  const checkout = new Date(bookingData.checkout);
+  let nights = Math.max(1, Math.ceil((checkout - checkin) / (1000 * 60 * 60 * 24)));
+  const total = parseFloat(bookingData.apartmentPrice || 0) * nights * (bookingData.rooms || 1);
+  document.getElementById('total-cost').value = total.toFixed(2);
 
-  const res = await apiFetch('/bookings/complete-payment/', {
-    method: 'POST',
-    body: JSON.stringify(payload)
+  // Show/hide payment options
+  const methodSelect = document.getElementById('payment-method');
+  methodSelect.addEventListener('change', () => {
+    document.getElementById('mobile-options').style.display = methodSelect.value === 'Mobile' ? 'block' : 'none';
+    document.getElementById('bank-options').style.display = methodSelect.value === 'Bank' ? 'block' : 'none';
   });
 
-  if (res && res.ok) {
-    alert('Booking and payment successful!');
-    sessionStorage.removeItem('pendingBooking');
-    window.location.href = 'dashboard.html';
-  } else {
-    alert(res.error || 'Payment failed.');
-  }
+  // Handle form submission
+  document.getElementById('payment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const method = methodSelect.value;
+    let provider = null;
+
+    if (method === 'Mobile') {
+      const checked = document.querySelector('input[name="mobile-operator"]:checked');
+      if (!checked) return alert('Please select a mobile operator');
+      provider = checked.value;
+    } else if (method === 'Bank') {
+      const bank = document.getElementById('bank-name').value;
+      if (!bank) return alert('Please select a bank');
+      provider = bank;
+    } else {
+      return alert('Select a payment method');
+    }
+
+    const amount = parseFloat(document.getElementById('total-cost').value);
+
+    // Construct payload to match backend
+    const payload = {
+      apartment_id: bookingData.apartmentId,
+      booking: bookingData.id,      // Booking ID
+      payment_method: method,       // Mobile / Bank
+      total_amount: amount,         // Total payment
+      rooms: bookingData.rooms || 1,
+      days_booked: nights,
+      apartment_name: bookingData.apartmentName
+    };
+
+    const API_BASE = `http://${window.location.hostname}:8000/api`;
+    const csrftoken = document.cookie.split('; ').find(c => c.startsWith('csrftoken='))?.split('=')[1];
+
+    try {
+      const res = await fetch(`${API_BASE}/bookings/payments/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrftoken || ''
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const result = await res.json();
+      if (result.ok) {
+        alert('Booking and payment successful!');
+        sessionStorage.removeItem('pendingBooking');
+        window.location.href = 'apartment.html';
+      } else {
+        alert(result.error || 'Payment failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Payment failed. Please try again.');
+    }
+  });
 });
 </script>
 </body>

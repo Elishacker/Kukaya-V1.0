@@ -1,12 +1,12 @@
-from rest_framework.decorators import api_view, permission_classes # type: ignore
-from rest_framework.permissions import IsAuthenticated, AllowAny # type: ignore
-from rest_framework.response import Response # type: ignore
-from django.contrib.auth import authenticate, get_user_model, login # type: ignore
-from django.contrib.auth import logout as django_logout # type: ignore
-from django.db import transaction # type: ignore
-from django.core.files.base import ContentFile # type: ignore
-from django.utils import timezone # type: ignore
-from .models import Apartment, Booking, PhoneOTP, ApartmentImage
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from django.contrib.auth import authenticate, get_user_model, login
+from django.contrib.auth import logout as django_logout
+from django.db import transaction
+from django.core.files.base import ContentFile
+from django.utils import timezone
+from .models import Apartment, Booking, PhoneOTP, ApartmentImage, Payment
 from .serializers import (
     UserSerializer,
     ApartmentSerializer,
@@ -17,7 +17,9 @@ import random, base64, json
 
 User = get_user_model()
 
-#  REQUEST OTP
+# -----------------------------
+# OTP Endpoints
+# -----------------------------
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def request_otp(request):
@@ -27,12 +29,11 @@ def request_otp(request):
 
     otp = str(random.randint(1000, 9999))
     PhoneOTP.objects.update_or_create(phone=phone, defaults={"otp": otp, "verified": False})
-    print(f"[DEV MODE] OTP for {phone}: {otp}")  # Remove in production!
+    print(f"[DEV MODE] OTP for {phone}: {otp}")  # Remove in production
 
     return Response({"ok": True, "message": "OTP sent successfully (dev mode)", "otp": otp})
 
 
-#  VERIFY OTP & LOGIN / LOGOUT/ REGISTER
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
@@ -53,8 +54,7 @@ def verify_otp(request):
     user, created = User.objects.get_or_create(phone=phone, defaults={"role": "customer"})
     otp_obj.verified = True
     otp_obj.save(update_fields=["verified"])
-
-    login(request, user) 
+    login(request, user)
 
     return Response({
         "ok": True,
@@ -63,13 +63,17 @@ def verify_otp(request):
         "message": "Login successful."
     })
 
+
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout(request):
-    django_logout(request) 
-    return Response({"ok": True})
+    django_logout(request)
+    return Response({"ok": True, "message": "Logged out successfully."})
 
 
-#  ADMIN LOGIN
+# -----------------------------
+# Admin Login
+# -----------------------------
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_login(request):
@@ -84,11 +88,12 @@ def admin_login(request):
         return Response({"ok": False, "error": "Invalid admin credentials."}, status=403)
 
     login(request, user)
-
     return Response({"ok": True, "user": UserSerializer(user).data, "message": "Admin login successful."})
 
 
-#  ADD APARTMENT
+# -----------------------------
+# Apartment Endpoints
+# -----------------------------
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -99,19 +104,13 @@ def add_apartment(request):
 
     data = request.data.copy()
 
-    # Convert price_amount to float
+    # Price conversion
     try:
         data["price"] = float(data.pop("price_amount", 0))
     except (ValueError, TypeError):
         return Response({"ok": False, "error": "Invalid price format."}, status=400)
 
-    # Parse offers and dynamic fields safely
-    if isinstance(data.get("offers"), str):
-        try:
-            data["offers"] = json.loads(data["offers"])
-        except Exception:
-            data["offers"] = []
-
+    # Parse dynamic fields
     dynamic_fields = data.pop("dynamic_fields", {})
     if isinstance(dynamic_fields, str):
         try:
@@ -120,11 +119,19 @@ def add_apartment(request):
             dynamic_fields = {}
     data.update(dynamic_fields)
 
-    # Assign owner
-    data["owner"] = user.id
+    # Parse offers
+    if isinstance(data.get("offers"), str):
+        try:
+            data["offers"] = json.loads(data["offers"])
+        except Exception:
+            data["offers"] = []
+
+    # Assign owner instance
+    data["owner"] = request.user
 
     serializer = ApartmentSerializer(data=data, context={"request": request})
     if not serializer.is_valid():
+        print("Apartment serializer errors:", serializer.errors)
         return Response({"ok": False, "errors": serializer.errors}, status=400)
 
     apartment = serializer.save()
@@ -154,14 +161,9 @@ def add_apartment(request):
         apartment.images.all(), many=True, context={"request": request}
     ).data
 
-    return Response({
-        "ok": True,
-        "apartment": apartment_data,
-        "message": "Apartment added successfully."
-    })
+    return Response({"ok": True, "apartment": apartment_data, "message": "Apartment added successfully."})
 
 
-#  EDIT APARTMENT
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -195,10 +197,10 @@ def edit_apartment(request, apartment_id):
     if serializer.is_valid():
         updated = serializer.save()
         return Response({"ok": True, "apartment": ApartmentSerializer(updated, context={"request": request}).data})
+    print("Edit apartment serializer errors:", serializer.errors)
     return Response({"ok": False, "errors": serializer.errors}, status=400)
 
 
-#  OWNER APARTMENTS
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def owner_apartments(request):
@@ -211,19 +213,13 @@ def owner_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-#  LIST APARTMENTS
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_apartments(request):
     category = request.GET.get("category", "All").lower()
     apartments = Apartment.objects.filter(is_active=True)
 
-    filters = {
-        "apartments": "apartment",
-        "hotels": "hotel",
-        "lodge": "lodge",
-        "offices": "office",
-    }
+    filters = {"apartments": "apartment", "hotels": "hotel", "lodge": "lodge", "offices": "office"}
     if category in filters:
         apartments = apartments.filter(category=filters[category])
 
@@ -232,13 +228,14 @@ def list_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-#  BOOK APARTMENT
+# -----------------------------
+# Booking Endpoints
+# -----------------------------
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def book_apartment(request):
     user = request.user
     apartment_id = request.data.get("apartment")
-
     if not apartment_id:
         return Response({"ok": False, "error": "Apartment ID is required."}, status=400)
 
@@ -251,7 +248,6 @@ def book_apartment(request):
     return Response({"ok": True, "booking": BookingSerializer(booking).data})
 
 
-#  BOOKING HISTORY
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def booking_history(request):
@@ -260,7 +256,84 @@ def booking_history(request):
     return Response({"ok": True, "bookings": serializer.data})
 
 
-# ADMIN: LIST USERS
+# -----------------------------
+# Payment Endpoints
+# -----------------------------
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@transaction.atomic
+def make_payment(request):
+    user = request.user
+    data = request.data.copy()
+
+    required_fields = ["apartment_id", "payment_method", "total_amount"]
+    for f in required_fields:
+        if f not in data:
+            return Response({"ok": False, "error": f"{f} is required."}, status=400)
+
+    # Step 1: Create booking
+    try:
+        apartment = Apartment.objects.get(id=data["apartment_id"])
+    except Apartment.DoesNotExist:
+        return Response({"ok": False, "error": "Apartment not found."}, status=404)
+
+    booking = Booking.objects.create(
+        customer=user,
+        apartment=apartment
+    )
+
+    # Step 2: Create payment
+    payment = Payment.objects.create(
+        phone=user.phone,
+        apartment_name=apartment.name,
+        rooms=data.get("rooms", 1),
+        payment_method=data["payment_method"],
+        total_amount=float(data["total_amount"]),
+        days_booked=data.get("days_booked", 1),
+        booking=booking
+    )
+
+    return Response({
+        "ok": True,
+        "booking": BookingSerializer(booking).data,
+        "payment": {
+            "id": payment.id,
+            "phone": payment.phone,
+            "apartment_name": payment.apartment_name,
+            "rooms": payment.rooms,
+            "payment_method": payment.payment_method,
+            "total_amount": float(payment.total_amount),
+            "days_booked": payment.days_booked,
+            "booking": booking.id,
+            "created_at": payment.created_at
+        },
+        "message": "Booking and payment successfully recorded."
+    })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def payment_history(request):
+    payments = Payment.objects.filter(phone=request.user.phone).order_by("-created_at")
+    payments_data = [
+        {
+            "id": p.id,
+            "apartment_name": p.apartment_name,
+            "rooms": p.rooms,
+            "payment_method": p.payment_method,
+            "total_amount": float(p.total_amount),
+            "days_booked": p.days_booked,
+            "booking": p.booking.id if p.booking else None,
+            "created_at": p.created_at
+        }
+        for p in payments
+    ]
+    return Response({"ok": True, "payments": payments_data})
+
+
+# -----------------------------
+# Admin Endpoints
+# -----------------------------
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def admin_list_users(request):
@@ -271,7 +344,6 @@ def admin_list_users(request):
     return Response({"ok": True, "users": serializer.data})
 
 
-#  ADMIN: LIST ALL APARTMENTS
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def admin_list_apartments(request):
@@ -282,22 +354,22 @@ def admin_list_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-#  USER PROFILE
+# -----------------------------
+# User Profile Endpoints
+# -----------------------------
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_profile(request):
-    user = request.user
-    serializer = UserSerializer(user)
+    serializer = UserSerializer(request.user)
     return Response({"ok": True, "user": serializer.data})
 
 
-#  UPDATE PROFILE
 @api_view(["PUT", "PATCH"])
 @permission_classes([IsAuthenticated])
 def update_profile(request):
-    user = request.user
-    serializer = UserSerializer(user, data=request.data, partial=True)
+    serializer = UserSerializer(request.user, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response({"ok": True, "user": serializer.data, "message": "Profile updated successfully."})
+    print("Profile update errors:", serializer.errors)
     return Response({"ok": False, "errors": serializer.errors}, status=400)

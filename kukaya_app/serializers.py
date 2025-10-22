@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Apartment, ApartmentImage, Booking
+from .models import User, Apartment, ApartmentImage, Booking, Payment
 from django.core.files.base import ContentFile
 from django.utils import timezone
 import base64, json
@@ -37,22 +37,14 @@ class ApartmentSerializer(serializers.ModelSerializer):
     owner_phone = serializers.CharField(source='owner.phone', read_only=True)
     images = ApartmentImageSerializer(many=True, read_only=True)
 
-    # Input for Base64 images
     uploaded_images = serializers.ListField(
-        child=serializers.CharField(),
-        write_only=True,
-        required=False,
-        help_text="List of Base64 encoded images"
+        child=serializers.CharField(), write_only=True, required=False
     )
 
-    # Offers as list
     offers = serializers.ListField(
-        child=serializers.CharField(),
-        required=False,
-        allow_empty=True
+        child=serializers.CharField(), required=False, allow_empty=True
     )
 
-    # rooms_per_floor as list for API, stored as string in DB
     rooms_per_floor = serializers.ListField(
         child=serializers.IntegerField(), required=False, allow_empty=True
     )
@@ -68,9 +60,6 @@ class ApartmentSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['owner', 'created_at', 'updated_at']
 
-    # -----------------------------
-    # VALIDATION
-    # -----------------------------
     def validate(self, attrs):
         service_type = attrs.get('service_type')
         errors = {}
@@ -94,9 +83,6 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    # -----------------------------
-    # INTERNAL VALUE PARSING
-    # -----------------------------
     def to_internal_value(self, data):
         dynamic = data.pop('dynamic_fields', {})
         if isinstance(dynamic, str):
@@ -128,17 +114,12 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(data)
 
-    # -----------------------------
-    # CREATE METHOD
-    # -----------------------------
     def create(self, validated_data):
         request = self.context.get('request')
         user = getattr(request, 'user', None)
         uploaded_images = validated_data.pop('uploaded_images', [])
-
         validated_data['owner'] = user
 
-        # Convert rooms_per_floor list back to string for DB
         if 'rooms_per_floor' in validated_data and isinstance(validated_data['rooms_per_floor'], list):
             validated_data['rooms_per_floor'] = ','.join(map(str, validated_data['rooms_per_floor']))
 
@@ -160,9 +141,6 @@ class ApartmentSerializer(serializers.ModelSerializer):
 
         return apartment
 
-    # -----------------------------
-    # REPRESENTATION (OUTPUT)
-    # -----------------------------
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         value = getattr(instance, 'rooms_per_floor', '')
@@ -188,3 +166,23 @@ class BookingSerializer(serializers.ModelSerializer):
             'check_out', 'rooms', 'notes', 'created_at',
         ]
         read_only_fields = ['customer', 'created_at', 'status']
+
+
+# -----------------------------
+# PAYMENT SERIALIZER
+# -----------------------------
+class PaymentSerializer(serializers.ModelSerializer):
+    booking_id = serializers.IntegerField(source='booking.id', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = [
+            'id', 'phone', 'apartment_name', 'rooms', 'payment_method',
+            'total_amount', 'days_booked', 'booking', 'booking_id', 'created_at'
+        ]
+        read_only_fields = ['created_at']
+
+    def validate_payment_method(self, value):
+        if value not in ["mobile", "bank"]:
+            raise serializers.ValidationError("Payment method must be either 'mobile' or 'bank'.")
+        return value
