@@ -359,10 +359,38 @@ section.active {
     margin-bottom:4px;
 }
 
-.account-section p {
-    font-size:14px;
-    margin-bottom:6px;
+.account-card {
+  max-width: 320px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+.account-card i.display-4 {
+  font-size: 60px;
+  color: var(--primary);
+}
+
+.account-card h5 {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.account-card p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.account-card .btn {
+  width: 100%;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+}
+
 
 .logout-btn {
     background:#d9534f;
@@ -375,44 +403,57 @@ section.active {
     cursor:pointer;
 }
 
+/* Modern floating bottom nav */
 .bottom-nav {
-    position:fixed;
-    bottom:0;
-    left:0;
-    width:100%;
-    background:white;
-    box-shadow:0 -1px 6px rgba(0,0,0,0.1);
-    display:flex;
-    justify-content:space-around;
-    padding:8px 0;
-    z-index:10;
-}
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 65px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 15;
+  }
 
-.bottom-nav button {
-    background:none;
-    border:none;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    font-size:12px;
-    color:#555;
-    cursor:pointer;
-}
+  .bottom-nav button {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
 
-.bottom-nav button
-.active {
-    color:#0033a0;
-}
-
-.bottom-nav :hover{
+  .bottom-nav button.active,
+  .bottom-nav button:hover {
     color: #0033a0;
-    font-weight: 300;
-}
+  }
 
-.bottom-nav button span {
-    font-size:20px;
-    margin-bottom:2px;
-}
+  .bottom-nav i {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+
+  .bottom-nav button:active i {
+    transform: scale(1.2);
+  }
+
+  @media (max-width: 576px) {
+    .bottom-nav {
+      height: 60px;
+      border-radius: 30px;
+    }
+    .bottom-nav button span {
+      font-size: 11px;
+    }
+  }
 
 .no-data {
     text-align:center;
@@ -420,6 +461,47 @@ section.active {
     color:#666;
     font-size:14px;
 }
+
+/* Pagination Styles */
+#pagination-container {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+#pagination-container button {
+    background: #f1f1f1;
+    border: none;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+#pagination-container button:hover {
+    background: #0033a0;
+    color: white;
+    transform: translateY(-2px);
+}
+
+#pagination-container button.active {
+    background: #0033a0;
+    color: white;
+    font-weight: 600;
+    transform: translateY(-2px);
+}
+
+#pagination-container button:disabled {
+    background: #e0e0e0;
+    color: #999;
+    cursor: default;
+    transform: none;
+}
+
 
 </style>
 </head>
@@ -446,6 +528,7 @@ section.active {
 <section id="home-section" class="active">
 <h2>Available Apartments</h2>
 <div id="owner-apartments" class="apartments-list"></div>
+<div id="pagination-container" style="display:flex;justify-content:center;margin-top:12px;"></div>
 </section>
 
 <section id="bookings-section">
@@ -454,15 +537,17 @@ section.active {
 </section>
 
 <section id="account-section">
-<h2>Account</h2>
-<div class="account-section">
-<p><strong>Phone:</strong> <span id="account-phone"></span></p>
-<p><strong>Role:</strong> <span id="account-role"></span></p>
-
-<button class="logout-btn" type="button" onclick="logout()">Logout</button>
-
-</div>
-</section>
+    <div class="account-card text-center mt-4">
+      <i class="bi bi-person-circle display-4 text-primary mb-2"></i>
+      <h5 id="account-name">Customer</h5>
+      <p class="text-muted" id="account-role">Customer</p>
+      <p class="text-muted" id="account-phone">+255 XXX XXX XXX</p>
+      <button onclick="logout()" class="btn btn-outline-danger mt-3">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
+    </div>
+  </section>
+  
 </main>
 
 <!-- Apartment Modal -->
@@ -496,13 +581,59 @@ section.active {
 </div>
 
 <div class="bottom-nav">
-<button class="active" onclick="showSection('home', event)"><span><i class="bi bi-houses"></i></span><strong>Home</strong></button>
-<button onclick="showSection('bookings', event)"><span><i class="bi bi-ticket"></i></span><strong>Bookings</strong></button>
-<button onclick="showSection('account', event)"><span><i class="bi bi-person"></i></span><strong>Profile</strong></button>
+<button class="active" onclick="showSection('home', event)"><span><i class="bi bi-houses-fill"></i></span><strong>Home</strong></button>
+<button onclick="showSection('bookings', event)"><span><i class="bi bi-ticket-fill"></i></span><strong>Bookings</strong></button>
+<button onclick="showSection('account', event)"><span><i class="bi bi-person-fill"></i></span><strong>Profile</strong></button>
 </div>
 
 <script>
-let apartmentsData=[],selectedCategory='all',currentUser=null,currentSlide=0;
+let apartmentsData=[],
+selectedCategory='all',
+currentUser=null,
+currentSlide=0;
+
+let currentPage = 1;
+const itemsPerPage = 10;
+
+function renderApartmentsPaginated(list) {
+    const totalPages = Math.ceil(list.length / itemsPerPage);
+    currentPage = Math.min(currentPage, totalPages) || 1; // Ensure currentPage is valid
+
+    const start = (currentPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    const paginatedList = list.slice(start, end);
+
+    renderApartments(paginatedList);
+    renderPaginationControls(totalPages);
+}
+
+function renderPaginationControls(totalPages) {
+    const container = document.getElementById('pagination-container');
+    if (totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = '';
+
+    // Previous button
+    html += `<button onclick="goToPage(${currentPage-1})" ${currentPage===1?'disabled':''}>« Prev</button>`;
+
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<button onclick="goToPage(${i})" class="${i===currentPage?'active':''}">${i}</button>`;
+    }
+
+    // Next button
+    html += `<button onclick="goToPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next »</button>`;
+
+    container.innerHTML = html;
+}
+
+function goToPage(page) {
+    currentPage = page;
+    filterAndRenderApartments();
+}
+
 
 function getCookie(name){
     const c=document.cookie.split(';').map(c=>c.trim());
@@ -613,8 +744,9 @@ function filterAndRenderApartments(){
         return matchesCategory&&matchesSearch;
     });
     
-    renderApartments(filtered);
+    renderApartmentsPaginated(filtered);
 }
+
 
 document.querySelectorAll('.category-btn').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));
@@ -774,16 +906,18 @@ async function loadBookings(){
     });
 }
 
-async function loadAccount(){
-    const res=await apiFetch('/auth/profile');
-    if(!res) 
-    return;
-
-    if(!res.ok||!res.user)
-    return;
-    document.getElementById('account-phone').textContent=res.user.phone||'N/A';
-    document.getElementById('account-role').textContent=res.user.role||'User';
+async function loadAccount() {
+  try {
+    const res = await fetch(`${API_BASE}/auth/profile/`, { credentials: "include" });
+    const data = await res.json();
+    if (data.user) {
+      document.getElementById("account-name").textContent = data.user.name || "Owner";
+      document.getElementById("account-phone").textContent = data.user.phone || "N/A";
+      document.getElementById("account-role").textContent = data.user.role || "Owner";
+    }
+  } catch { }
 }
+
 
 async function logout(){
     try{

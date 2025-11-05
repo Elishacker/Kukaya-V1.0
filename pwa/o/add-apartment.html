@@ -99,41 +99,58 @@ section.active {
 .inline-options-wrap input { 
   margin-right: 4px; 
 }
-.bottom-nav { 
-  position: fixed; 
-  bottom: 0; 
-  left: 0; 
-  width: 100%; 
-  background: white;
-  box-shadow: 0 -1px 6px rgba(0,0,0,0.1); 
-  display: flex; 
-  justify-content: space-around; 
-  padding: 8px 0; 
-  z-index: 10; 
-}
-.bottom-nav button { 
-  background: none; 
-  border: none; 
-  display: flex; 
-  flex-direction: column; 
-  align-items: center;
-  font-size: 12px; 
-  color: #555; 
-  cursor: pointer; 
-}
 
-.bottom-nav button.active { 
-  color: #0033a0; 
-}
+/* Modern floating bottom nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 65px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 15;
+  }
 
-.bottom-nav button :hover {
-  color: #0033a0;
-  font-weight: 300;
-}
-.bottom-nav button span { 
-  font-size: 20px; 
-  margin-bottom: 2px; 
-}
+  .bottom-nav button {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .bottom-nav button.active,
+  .bottom-nav button:hover {
+    color: #0033a0;
+  }
+
+  .bottom-nav i {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+
+  .bottom-nav button:active i {
+    transform: scale(1.2);
+  }
+
+  @media (max-width: 576px) {
+    .bottom-nav {
+      height: 60px;
+      border-radius: 30px;
+    }
+    .bottom-nav button span {
+      font-size: 11px;
+    }
+  }
 
 .floating-add { 
   position: fixed; 
@@ -241,9 +258,9 @@ section.active {
 
 <!-- Bottom Navigation -->
 <div class="bottom-nav">
-  <button class="active" onclick="window.location.href='dashboard.html'"><span><i class="bi bi-houses"></i></span><strong>Home</strong></button>
-  <button onclick="window.location.href='list-booking.html'"><span><i class="bi bi-ticket"></i></span><strong>Bookings</strong></button>
-  <button onclick="showSection('account', event)"><span><i class="bi bi-person"></i></span><strong>Profile</strong></button>
+  <button class="active" onclick="window.location.href='dashboard.html'"><span><i class="bi bi-houses-fill"></i></span><strong>Home</strong></button>
+  <button onclick="window.location.href='list-booking.html'"><span><i class="bi bi-ticket-fill"></i></span><strong>Bookings</strong></button>
+  <button onclick="showSection('account', event)"><span><i class="bi bi-person-fill"></i></span><strong>Profile</strong></button>
 </div>
 
 <script>

@@ -1,25 +1,327 @@
-<h2>Manage Users</h2>
-<div id="userList"></div>
-<h2>Manage Apartments</h2>
-<div id="apartmentList"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kukaya Admin Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
 
-<script>
-async function loadUsers(){
-  const res = await fetch("http://localhost:8000/api/apartments/lists");
-  const data = await res.json();
-  document.getElementById("userList").innerHTML = data.map(u => `
-    <div>${u.phone} - ${u.role}</div>
-  `).join("");
-}
+  <style>
+    :root {
+      --primary: #004aad;
+      --secondary: #0097b2;
+      --light: #f8fafc;
+      --text-dark: #212529;
+    }
 
-async function loadApartments(){
-  const res = await fetch("http://localhost:8000/api/admin/apartments/");
-  const data = await res.json();
-  document.getElementById("apartmentList").innerHTML = data.map(a => `
-    <div>${a.name} - ${a.owner_name} - ${a.price}</div>
-  `).join("");
-}
+    body {
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      background: var(--light);
+      overflow-x: hidden;
+    }
 
-loadUsers();
-loadApartments();
-</script>
+    /* HEADER */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 55px;
+      background-color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+    .header .menu-btn{
+      font-size: 1.5rem;
+      color: #fff;
+      cursor: pointer;
+    }
+    .header h5 {
+      color: #fff;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background: var(--primary);
+      color: #fff;
+      transition: 0.3s;
+      z-index: 1100;
+      padding-top: 65px;
+    }
+    .sidebar.active {
+      left: 0;
+    }
+    .sidebar a {
+      display: block;
+      color: white;
+      text-decoration: none;
+      padding: 12px 20px;
+      transition: 0.3s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar a:hover,
+    .sidebar a.active {
+      background: var(--secondary);
+      border-left: 3px solid #fff;
+    }
+    .dropdown-content {
+      display: none;
+      background: rgba(255,255,255,0.1);
+    }
+    .dropdown.active .dropdown-content {
+      display: block;
+    }
+    .dropdown-content a {
+      padding-left: 40px;
+      font-size: 0.9rem;
+    }
+
+    /* OVERLAY */
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.4);
+      display: none;
+      z-index: 1000;
+    }
+    .overlay.active {
+      display: block;
+    }
+
+    /* CONTENT */
+    .content {
+      margin-top: 60px;
+      padding: 15px;
+      padding-bottom: 90px;
+      min-height: calc(100vh - 60px);
+    }
+
+    .card {
+      border: none;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+      margin-bottom: 15px;
+      padding: 15px;
+    }
+
+    /* BOTTOM NAV */
+    .bottom-nav {
+      position: fixed;
+      bottom: 15px;
+      left: 15px;
+      width: calc(100% - 30px);
+      height: 65px;
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      border-radius: 35px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      z-index: 1050;
+    }
+    .bottom-nav a {
+      text-decoration: none;
+      color: #666;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .bottom-nav a i {
+      font-size: 22px;
+      margin-bottom: 2px;
+    }
+    .bottom-nav a.active,
+    .bottom-nav a:hover {
+      color: #0033a0;
+    }
+    .bottom-nav a:active i {
+      transform: scale(1.2);
+    }
+    @media (max-width: 576px) {
+      .bottom-nav {
+        height: 60px;
+        border-radius: 30px;
+      }
+      .bottom-nav a span {
+        font-size: 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <i class="bi bi-list menu-btn" onclick="toggleSidebar()"></i>
+    <h5 id="sectionTitle">Dashboard</h5>
+    <i class="bi bi-bell text-primary"></i>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <a href="#" class="active" onclick="switchSection('dashboard')"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a>
+    <div class="dropdown">
+      <a href="#" onclick="toggleDropdown(event)"><i class="bi bi-building me-2"></i>Services <i class="bi bi-chevron-down float-end"></i></a>
+      <div class="dropdown-content">
+        <a href="#" onclick="loadApartments('apartment')">Apartments</a>
+        <a href="#" onclick="loadApartments('hotel')">Hotels</a>
+        <a href="#" onclick="loadApartments('lodge')">Lodges</a>
+      </div>
+    </div>
+    <a href="#" onclick="loadUsers()"><i class="bi bi-people me-2"></i>Users</a>
+  </div>
+
+  <!-- Overlay -->
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <!-- Content -->
+  <div class="content" id="contentArea">
+    <div class="text-center mt-5 text-muted">
+      <i class="bi bi-speedometer2 display-4 mb-2"></i>
+      <h5>Welcome to Kukaya Admin Dashboard</h5>
+      <p>Manage users, bookings, and services efficiently.</p>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="#" class="active" onclick="bottomSection(event,'Home')">
+      <i class="bi bi-house-door-fill"></i>
+      <span>Home</span>
+    </a>
+    <a href="#" onclick="bottomSection(event,'Bookings')">
+      <i class="bi bi-ticket-fill"></i>
+      <span>Bookings</span>
+    </a>
+    <a href="#" onclick="bottomSection(event,'Profile')">
+      <i class="bi bi-person-fill"></i>
+      <span>Profile</span>
+    </a>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8000/api";
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("active");
+      document.getElementById("overlay").classList.toggle("active");
+    }
+
+    function toggleDropdown(e) {
+      e.preventDefault();
+      e.currentTarget.parentElement.classList.toggle("active");
+    }
+
+    function bottomSection(e, section) {
+      e.preventDefault();
+      document.querySelectorAll(".bottom-nav a").forEach(a => a.classList.remove("active"));
+      e.currentTarget.classList.add("active");
+      const area = document.getElementById("contentArea");
+      document.getElementById("sectionTitle").textContent = section;
+
+      if (section === "Home") {
+        area.innerHTML = `
+          <div class="text-center mt-5 text-muted">
+            <i class="bi bi-speedometer2 display-4 mb-2"></i>
+            <h5>Welcome to Kukaya Admin Dashboard</h5>
+            <p>Monitor services, users, and bookings efficiently.</p>
+          </div>`;
+      } else if (section === "Bookings") {
+        area.innerHTML = `<p class="text-center text-muted mt-4">Loading bookings...</p>`;
+        fetch(`${API_BASE}/admin/bookings/`)
+          .then(res => res.json())
+          .then(data => {
+            area.innerHTML = data.map(b => `
+              <div class="card">
+                <h6>${b.apartment_name}</h6>
+                <small>${b.check_in} → ${b.check_out}</small><br>
+                <small>Status: <span class="text-primary">${b.status}</span></small>
+              </div>`).join("");
+          })
+          .catch(() => {
+            area.innerHTML = `<p class="text-danger text-center mt-4">Failed to load bookings.</p>`;
+          });
+      } else if (section === "Profile") {
+        area.innerHTML = `
+          <div class="card text-center mt-5">
+            <i class="bi bi-person-circle display-4 text-primary mb-2"></i>
+            <h6>Admin</h6>
+            <small class="text-muted">Administrator</small>
+            <div class="mt-3">
+              <button class="btn btn-outline-primary btn-sm" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Logout
+              </button>
+            </div>
+          </div>`;
+      }
+    }
+
+    function switchSection(section) {
+      document.getElementById("sectionTitle").textContent = section.charAt(0).toUpperCase() + section.slice(1);
+      bottomSection({currentTarget: document.querySelector(`.bottom-nav a.active`)}, section);
+    }
+
+    async function loadUsers() {
+      document.getElementById("sectionTitle").textContent = "Users";
+      const area = document.getElementById("contentArea");
+      area.innerHTML = `<p class="text-center text-muted mt-4">Loading users...</p>`;
+      try {
+        const res = await fetch(`${API_BASE}/users/`);
+        const data = await res.json();
+        area.innerHTML = data.map(u => `
+          <div class="card">
+            <h6>${u.phone}</h6>
+            <small class="text-muted">${u.role}</small>
+          </div>`).join("");
+      } catch {
+        area.innerHTML = `<p class="text-danger text-center mt-4">Failed to load users.</p>`;
+      }
+    }
+
+    async function loadApartments(type) {
+      document.getElementById("sectionTitle").textContent = `Manage ${type}s`;
+      const area = document.getElementById("contentArea");
+      area.innerHTML = `<p class="text-center text-muted mt-4">Loading ${type}s...</p>`;
+      try {
+        const res = await fetch(`${API_BASE}/admin/apartments/?category=${type}`);
+        const data = await res.json();
+        area.innerHTML = data.map(a => `
+          <div class="card">
+            <h6>${a.name}</h6>
+            <p class="small text-muted mb-1">${a.location || "N/A"}</p>
+            <small>Owner: ${a.owner_name || "N/A"} | Price: ${a.price}</small>
+          </div>`).join("");
+      } catch {
+        area.innerHTML = `<p class="text-danger text-center mt-4">Failed to load ${type}s.</p>`;
+      }
+    }
+
+    function logout() {
+      if (confirm("Are you sure you want to logout?")) {
+        fetch(`${API_BASE}/logout/`, { method: "POST" });
+        localStorage.clear();
+        window.location.href = "../login.html";
+      }
+    }
+  </script>
+</body>
+</html>

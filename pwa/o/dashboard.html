@@ -3,307 +3,370 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Owner Dashboard — Mobile View</title>
+  <title>Kukaya Owner Dashboard</title>
   <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
 
-  <!-- Vendor CSS Files -->
-<link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-<link href="../vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
-<link href="../vendor/aos/aos.css" rel="stylesheet">
-<link href="../vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
-<link href="../vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+  <!-- Vendor CSS -->
+  <link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="../vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet" />
 
   <style>
-    * { 
-      box-sizing: border-box; 
-      margin: 0; 
-      padding: 0; 
-      font-family: Arial, sans-serif; 
-    }
-    body { 
-      background-color: #f8f9fa; 
-      color: #333; 
-      padding-bottom: 100px; 
+    :root {
+      --primary: #0033a0;
+      --danger: #d9534f;
+      --bg-light: #f8f9fa;
     }
 
-    /* Header */
-    header { 
-      background-color: #0033a0; 
-      color: white; 
-      padding: 12px 16px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      position: sticky; 
-      top: 0; 
-      z-index: 10; 
-    }
-    header h1 { 
-      font-size: 18px; 
-    }
-    header .icon-btn { 
-      background: none; 
-      border: none; 
-      color: white; 
-      font-size: 22px; 
-      cursor: pointer; 
+    * {
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 0;
     }
 
-    /* Search Bar */
-    .search-bar { 
-      padding: 10px 16px; 
-      background: #fff; 
-      display: flex; 
-      gap: 8px; 
-      align-items: center; 
-      border-bottom: 1px solid #ddd; 
-    }
-    .search-bar input { 
-      flex: 1; 
-      padding: 8px 12px; 
-      border-radius: 6px; 
-      border: 1px solid #ccc; 
-    }
-    .search-bar button { 
-      background: #0033a0; 
-      border: none; 
-      color: white; 
-      padding: 8px 12px; 
-      border-radius: 6px; 
-      cursor: pointer; 
+    body {
+      background: var(--bg-light);
+      padding-bottom: 85px;
+      color: #333;
     }
 
-    main { 
-      padding: 10px 16px; 
-    }
-    section { 
-      display: none; 
-    }
-    section.active { 
-      display: block; 
-    }
-
-    /* Apartment Cards */
-    .apartments-list { 
-      display: grid; 
-      grid-template-columns: 1fr; 
-      gap: 12px; 
-      margin-top: 12px; 
-    }
-    .apartment-card { 
-      background: white; 
-      border-radius: 10px; 
-      padding: 12px; 
-      box-shadow: 0 1px 6px rgba(0,0,0,0.1); 
-      display: flex; 
-      flex-direction: column; 
-    }
-    .apartment-card img { 
-      width: 100%; 
-      height: 160px; 
-      object-fit: cover; 
-      border-radius: 8px; 
-      margin-bottom: 8px; 
-    }
-    .apartment-card h3 { 
-      font-size: 16px; 
-      margin-bottom: 4px; 
-    }
-    .apartment-card p { 
-      font-size: 14px; 
-      margin-bottom: 4px; 
-    }
-    .apartment-actions { 
-      display: flex; 
-      gap: 6px; 
-      margin-top: 6px; 
-    }
-    .apartment-actions button { 
-      flex: 1; 
-      padding: 8px; 
-      border-radius: 6px; 
-      border: none; 
-      cursor: pointer; 
-      font-size: 14px; 
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      gap: 4px; 
-    }
-    .btn-edit { 
-      background: #0033a0; 
-      color: white; 
-    }
-    .btn-delete { 
-      background: #d9534f; 
-      color: white; 
+    /* HEADER */
+    header {
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    /* Booking Cards */
-    .booking-card { 
-      background: white; 
-      padding: 12px; 
-      border-radius: 10px; 
-      margin-bottom: 10px; 
-      box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
-    }
-    .booking-card p { 
-      font-size: 14px; 
-      margin-bottom: 4px; 
+    header h1 {
+      font-size: 17px;
+      margin: 0;
     }
 
-    /* Account */
-    .account-section p { 
-      font-size: 14px; 
-      margin-bottom: 6px; 
-    }
-    .logout-btn { 
-      background: #d9534f; 
-      color: white; 
-      width: 100%; 
-      padding: 10px; 
-      border: none; 
-      border-radius: 6px; 
-      margin-top: 10px; 
-      cursor: pointer; 
+    .icon-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
     }
 
-    /* Bottom Navigation */
-    .bottom-nav { 
-      position: fixed; 
-      bottom: 0; left: 0; 
-      width: 100%; 
-      background: white; 
-      box-shadow: 0 -1px 6px rgba(0,0,0,0.1); 
-      display: flex; 
-      justify-content: space-around; 
-      padding: 8px 0; 
-      z-index: 10; 
-    }
-    .bottom-nav button { 
-      background: none; 
-      border: none; 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      font-size: 12px; 
-      color: #555; 
-      cursor: pointer; 
-    }
-    .bottom-nav button.active { 
-      color: #0033a0; 
+    /* SEARCH BAR */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border-bottom: 1px solid #ddd;
+      padding: 10px 16px;
     }
 
-    .bottom-nav button :hover {
-      color: #0033a0;
-      font-weight: 300;
-    }
-    .bottom-nav button span { 
-      font-size: 20px; 
-      margin-bottom: 2px; 
+    .search-bar input {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
 
-    /* Floating Add Button */
+    .search-bar button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+
+    /* CONTENT */
+    main {
+      padding: 10px 16px;
+    }
+
+    section {
+      display: none;
+    }
+
+    section.active {
+      display: block;
+    }
+
+    /* CARDS */
+    .apartments-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .apartment-card,
+    .booking-card {
+      background: white;
+      border-radius: 10px;
+      padding: 12px;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .apartment-card img {
+      width: 100%;
+      height: 160px;
+      border-radius: 8px;
+      object-fit: cover;
+      margin-bottom: 8px;
+    }
+
+    .apartment-card h3 {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .apartment-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .apartment-actions button {
+      flex: 1;
+      border: none;
+      border-radius: 6px;
+      padding: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .btn-edit {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-delete {
+      background: var(--danger);
+      color: white;
+    }
+
+    .booking-card p {
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    /* ACCOUNT */
+    .account-card {
+        max-width: 320px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .account-card i.display-4 {
+        font-size: 60px;
+        color: var(--primary);
+      }
+
+      .account-card h5 {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+
+      .account-card p {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .account-card .btn {
+        width: 100%;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 14px;
+      }
+
+
+    .logout-btn {
+      width: 100%;
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 10px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    /* FLOATING ADD BUTTON */
     .floating-add-btn {
       position: fixed;
-      bottom: 160px;
+      bottom: 90px;
       right: 20px;
-      background: #0033a0;
+      background: var(--primary);
       color: white;
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      font-size: 32px;
+      width: 52px;
+      height: 52px;
+      font-size: 28px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 15;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
-    .no-data { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+    /* Modern floating bottom nav */
+  .bottom-nav {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    width: calc(100% - 30px);
+    height: 65px;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 35px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 15;
+  }
+
+  .bottom-nav button {
+    background: none;
+    border: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .bottom-nav button.active,
+  .bottom-nav button:hover {
+    color: #0033a0;
+  }
+
+  .bottom-nav i {
+    font-size: 22px;
+    margin-bottom: 2px;
+  }
+
+  .bottom-nav button:active i {
+    transform: scale(1.2);
+  }
+
+  @media (max-width: 576px) {
+    .bottom-nav {
+      height: 60px;
+      border-radius: 30px;
+    }
+    .bottom-nav button span {
+      font-size: 11px;
+    }
+  }
+
+    .no-data {
+      text-align: center;
+      color: #777;
+      font-size: 14px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
 
 <header>
   <h1>Kukaya App | Owner</h1>
-  <button title="Notifications" class="icon-btn" onclick="alert('Notifications coming soon!')"><span><i class="bi bi-bell"></i></span></button>
+  <button class="icon-btn" onclick="alert('Notifications coming soon!')">
+    <i class="bi bi-bell"></i>
+  </button>
 </header>
 
-<div class="search-bar">
-  <input type="text" id="search-input" placeholder="Search apartments..." oninput="filterApartments()">
-  <button title="Filtering Apartment" onclick="filterApartments()"><span><i class="bi bi-search"></i></span></button>
-</div>
 
 <main>
+  <!-- HOME -->
   <section id="home-section" class="active">
     <h2>Current Apartments</h2>
     <div id="owner-apartments" class="apartments-list"></div>
   </section>
 
+  <!-- BOOKINGS -->
   <section id="bookings-section">
     <h2>Bookings</h2>
     <div id="bookings-list"></div>
   </section>
 
+  <!-- ACCOUNT -->
   <section id="account-section">
-    <h2>Account</h2>
-    <div class="account-section">
-      <p><strong>Phone:</strong> <span id="account-phone"></span></p>
-      <p><strong>Role:</strong> <span id="account-role"></span></p>
-      <button onclick="logout()" class="logout-btn">Logout</button>
+    <div class="account-card text-center mt-4">
+      <i class="bi bi-person-circle display-4 text-primary mb-2"></i>
+      <h5 id="account-name">Owner Name</h5>
+      <p class="text-muted" id="account-role">Owner</p>
+      <p class="text-muted" id="account-phone">+255 XXX XXX XXX</p>
+      <button onclick="logout()" class="btn btn-outline-danger mt-3">
+        <i class="bi bi-box-arrow-right"></i> Logout
+      </button>
     </div>
   </section>
+  
 </main>
 
-<!-- Floating Add Apartment Button -->
-<div class="floating-add-btn" onclick="addApartment()"><span><i class="bi bi-plus"></i></span></div>
+<!-- FLOATING ADD BUTTON -->
+<div class="floating-add-btn" onclick="addApartment()">
+  <i class="bi bi-plus"></i>
+</div>
 
-<!-- Bottom Navigation -->
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
-  <button class="active" onclick="showSection('home', event)"><span><i class="bi bi-houses"></i></span><strong>Home</strong></button>
-  <button onclick="showSection('bookings', event)"><span><i class="bi bi-ticket"></i></span><strong>Bookings</strong></button>
-  <button onclick="showSection('account', event)"><span><i class="bi bi-person"></i></span><strong>Profile</strong></button>
+  <button class="active" onclick="switchTab('home', event)">
+    <i class="bi bi-houses-fill"></i>
+    <span>Home</span>
+  </button>
+  <button onclick="switchTab('bookings', event)">
+    <i class="bi bi-ticket-fill"></i>
+    <span>Bookings</span>
+  </button>
+  <button onclick="switchTab('account', event)">
+    <i class="bi bi-person-fill"></i>
+    <span>Profile</span>
+  </button>
 </div>
 
 <script>
-  const csrftoken = getCookie("csrftoken");
+  const API_BASE = `http://${window.location.hostname}:8000/api`;
   let apartmentsData = [];
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-      document.cookie.split(";").forEach(cookie => {
-        cookie = cookie.trim();
-        if (cookie.startsWith(name + "=")) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-      });
-    }
-    return cookieValue;
-  }
+  function switchTab(tab, e) {
+    document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+    document.getElementById(`${tab}-section`).classList.add("active");
+    document.querySelectorAll(".bottom-nav button").forEach(b => b.classList.remove("active"));
+    e.currentTarget.classList.add("active");
 
-  function showSection(section, event) {
-    document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
-    document.getElementById(section + '-section').classList.add('active');
-    document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
-    if(event) event.currentTarget.classList.add('active');
+    if (tab === "bookings") loadBookings();
+    if (tab === "account") loadAccount();
   }
 
   async function loadOwnerApartments() {
     try {
-      const res = await fetch(`http://${window.location.hostname}:8000/api/apartments/owner/`, { credentials: "include" });
+      const res = await fetch(`${API_BASE}/apartments/owner/`, { credentials: "include" });
       const data = await res.json();
       const container = document.getElementById("owner-apartments");
 
-      if (!data.ok || !data.apartments || data.apartments.length === 0) {
+      if (!Array.isArray(data.apartments) || data.apartments.length === 0) {
         container.innerHTML = `<p class="no-data">No apartments found.</p>`;
         return;
       }
 
       apartmentsData = data.apartments;
       renderApartments(apartmentsData);
-    } catch (err) {
-      console.error(err);
+    } catch {
       document.getElementById("owner-apartments").innerHTML = `<p class="no-data">Failed to load apartments.</p>`;
     }
   }
@@ -312,64 +375,70 @@
     const container = document.getElementById("owner-apartments");
     container.innerHTML = list.map(a => `
       <div class="apartment-card">
-        ${a.images && a.images.length > 0 ? `<img src="${a.images[0].image_url}" alt="${a.name}">` : `<img src="assets/images/no-image.jpg" alt="No image">`}
+        <img src="${a.images?.[0]?.image_url || 'assets/images/no-image.jpg'}" alt="${a.name}">
         <h3>${a.name}</h3>
         <p><strong>Location:</strong> ${a.location}</p>
         <p><strong>Price:</strong> Tzs. ${a.price}/=</p>
         <p>${a.details || ''}</p>
         <div class="apartment-actions">
-          <button class="btn-edit" onclick="editApartment(${a.id})"> <span><i class="bi bi-pencil"></i></span>Edit</button>
-          <button class="btn-delete" onclick="deleteApartment(${a.id})"><span><i class="bi bi-trash"></i></span> Delete</button>
+          <button class="btn-edit" onclick="editApartment(${a.id})"><i class="bi bi-pencil"></i>Edit</button>
+          <button class="btn-delete" onclick="deleteApartment(${a.id})"><i class="bi bi-trash"></i>Delete</button>
         </div>
-      </div>`).join('');
+      </div>
+    `).join("");
   }
 
   function filterApartments() {
-    const query = document.getElementById("search-input").value.toLowerCase();
-    const filtered = apartmentsData.filter(a => a.name.toLowerCase().includes(query) || a.location.toLowerCase().includes(query));
-    renderApartments(filtered);
+    const q = document.getElementById("search-input").value.toLowerCase();
+    const filtered = apartmentsData.filter(a =>
+      a.name.toLowerCase().includes(q) || a.location.toLowerCase().includes(q)
+    );
+    renderApartments(filtered.length ? filtered : []);
   }
 
-  function editApartment(id) { alert("Edit apartment ID " + id); }
-  function deleteApartment(id) { alert("Delete apartment ID " + id); }
+  function editApartment(id) { alert(`Edit apartment ID ${id}`); }
+  function deleteApartment(id) { alert(`Delete apartment ID ${id}`); }
   function addApartment() { window.location.href = "add-apartment.html"; }
 
   async function loadBookings() {
     try {
-      const res = await fetch(`http://${window.location.hostname}:8000/api/bookings/history/`, { credentials: "include" });
+      const res = await fetch(`${API_BASE}/bookings/history/`, { credentials: "include" });
       const data = await res.json();
-      const container = document.getElementById("bookings-list");
-      if (!data.ok || !data.bookings || data.bookings.length === 0) {
-        container.innerHTML = `<p class="no-data">No bookings found.</p>`;
-        return;
-      }
-      container.innerHTML = data.bookings.map(b => `
-        <div class="booking-card">
-          <p><strong>${b.apartment_name}</strong> - ${b.location}</p>
-          <p>Price: $${b.price} | Status: ${b.status}</p>
-          <p>Booked at: ${new Date(b.created_at).toLocaleString()}</p>
-        </div>`).join('');
-    } catch(err) {
-      console.error(err);
+      const list = data.bookings || [];
+      document.getElementById("bookings-list").innerHTML =
+        list.length === 0
+          ? `<p class="no-data">No bookings found.</p>`
+          : list.map(b => `
+              <div class="booking-card">
+                <p><strong>${b.apartment_name}</strong> — ${b.location}</p>
+                <p>Price: Tzs. ${b.price} | Status: ${b.status}</p>
+                <p>Booked: ${new Date(b.created_at).toLocaleString()}</p>
+              </div>
+            `).join("");
+    } catch {
       document.getElementById("bookings-list").innerHTML = `<p class="no-data">Failed to load bookings.</p>`;
     }
   }
 
   async function loadAccount() {
-    try {
-      const res = await fetch(`http://${window.location.hostname}:8000/api/auth/profile/`, { credentials: "include" });
-      const data = await res.json();
-      if (!data.ok) return;
-      document.getElementById("account-phone").textContent = data.user.phone;
-      document.getElementById("account-role").textContent = data.user.role;
-    } catch(err) { console.error(err); }
+  try {
+    const res = await fetch(`${API_BASE}/auth/profile/`, { credentials: "include" });
+    const data = await res.json();
+    if (data.user) {
+      document.getElementById("account-name").textContent = data.user.name || "Owner";
+      document.getElementById("account-phone").textContent = data.user.phone || "N/A";
+      document.getElementById("account-role").textContent = data.user.role || "Owner";
+    }
+  } catch { }
+}
+
+
+  function logout() {
+    localStorage.clear();
+    window.location.href = "../index.html";
   }
 
-  function logout() { window.location.href = "../index.html"; }
-
   loadOwnerApartments();
-  loadBookings();
-  loadAccount();
 </script>
 </body>
 </html>
