@@ -1,11 +1,9 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.utils import timezone
+from django.db import models # type: ignore
+from django.contrib.auth.models import AbstractUser, BaseUserManager # type: ignore
+from django.utils import timezone # type: ignore
 import random
 
-# ---------------------------
 # CUSTOM USER MANAGER
-# ---------------------------
 class CustomUserManager(BaseUserManager):
     """Manager for custom user model using phone as username."""
 
@@ -34,9 +32,7 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(phone, password, **extra_fields)
 
 
-# ---------------------------
 # CUSTOM USER MODEL
-# ---------------------------
 class User(AbstractUser):
     ROLE_CHOICES = (
         ("customer", "Customer"),
@@ -57,9 +53,7 @@ class User(AbstractUser):
         return f"{self.phone} ({self.role})"
 
 
-# ---------------------------
 # APARTMENT MODEL
-# ---------------------------
 CATEGORY_CHOICES = [
     ("apartment", "Apartment"),
     ("hotel", "Hotel"),
@@ -69,7 +63,7 @@ CATEGORY_CHOICES = [
 
 SERVICE_CHOICES = [
     ("standalone", "Stand-alone"),
-    ("ghorofa", "Ghorofa"),
+    ("highrise", "Highrise"),
 ]
 
 class Apartment(models.Model):
@@ -87,7 +81,7 @@ class Apartment(models.Model):
     num_rooms = models.PositiveIntegerField(null=True, blank=True, help_text="Rooms per standalone unit")
     apartment_names = models.TextField(blank=True, null=True, help_text="Comma-separated apartment names")
 
-    # Ghorofa fields
+    # highrise fields
     num_floors = models.PositiveIntegerField(null=True, blank=True)
     rooms_per_floor = models.TextField(blank=True, null=True, help_text="Comma-separated room counts per floor")
 
@@ -116,9 +110,7 @@ class Apartment(models.Model):
         return [x.strip() for x in self.apartment_names.split(",") if x.strip()]
 
 
-# ---------------------------
 # APARTMENT IMAGE MODEL
-# ---------------------------
 class ApartmentImage(models.Model):
     apartment = models.ForeignKey(Apartment, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="apartments/")
@@ -132,9 +124,7 @@ class ApartmentImage(models.Model):
         return f"Image for {self.apartment.name}"
 
 
-# ---------------------------
 # BOOKING MODEL
-# ---------------------------
 class Booking(models.Model):
     STATUS_CHOICES = (
         ("pending", "Pending"),
@@ -158,9 +148,7 @@ class Booking(models.Model):
         return f"{self.customer.phone} → {self.apartment.name} [{self.status}]"
 
 
-# ---------------------------
 # PHONE OTP MODEL
-# ---------------------------
 class PhoneOTP(models.Model):
     phone = models.CharField(max_length=15, unique=True)
     otp = models.CharField(max_length=6)
@@ -199,9 +187,7 @@ class PhoneOTP(models.Model):
         return elapsed > self.expires_in * 60
 
 
-# ---------------------------
 # PAYMENT MODEL
-# ---------------------------
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = (
         ("mobile", "Mobile Payment"),

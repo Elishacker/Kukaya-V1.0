@@ -5,44 +5,159 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Add Apartment — Owner Dashboard</title>
 <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
+
+<!-- Vendor CSS Files -->
+<link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="../vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+<link href="../vendor/aos/aos.css" rel="stylesheet">
+<link href="../vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+<link href="../vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-body { background-color: #f8f9fa; color: #333; padding-bottom: 100px; }
-header { background-color: #0033a0; color: white; padding: 12px 16px; display: flex;
-  justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; border-radius: 0 0 8px 8px; }
-header h1 { font-size: 18px; }
-header .icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
-main { padding: 10px 16px; }
-section { display: none; }
-section.active { display: block; }
-.apartment-form { background: white; padding: 16px; border-radius: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.1);
-  margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
-.apartment-form label { font-weight: bold; margin-top: 8px; }
-.apartment-form input, .apartment-form textarea, .apartment-form select {
-  padding: 10px; border: 1px solid #ccc; border-radius: 6px; width: 100%; }
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  font-family: Arial, sans-serif; 
+}
+body { 
+  background-color: #f8f9fa; 
+  color: #333; 
+  padding-bottom: 100px; 
+}
+header { 
+  background-color: #0033a0; 
+  color: white; 
+  padding: 12px 16px; 
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  position: sticky; 
+  top: 0; 
+  z-index: 10; 
+  border-radius: 0 0 8px 8px; 
+}
+header h1 { 
+  font-size: 18px; 
+}
+header .icon-btn { 
+  background: none; 
+  border: none; 
+  color: white; 
+  font-size: 22px; 
+  cursor: pointer; 
+}
+main { 
+  padding: 10px 16px; 
+}
+section { 
+  display: none; 
+}
+section.active { 
+  display: block; 
+}
+.apartment-form { 
+  background: white; 
+  padding: 16px; 
+  border-radius: 10px; 
+  box-shadow: 0 1px 6px rgba(0,0,0,0.1);
+  margin-top: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+}
+.apartment-form label { 
+  font-weight: bold; 
+  margin-top: 8px; 
+}
+.apartment-form input, 
+.apartment-form textarea, 
+.apartment-form select {
+  padding: 10px; 
+  border: 1px solid #ccc; 
+  border-radius: 6px; 
+  width: 100%; 
+}
 .apartment-form button {
-  background-color: #0033a0; color: white; padding: 12px; border: none;
-  border-radius: 6px; cursor: pointer; font-size: 16px; }
-.inline-options label, .inline-options-wrap label {
-  display: inline-flex; align-items: center; margin-right: 12px; margin-bottom: 6px; cursor: pointer; }
-.inline-options input, .inline-options-wrap input { margin-right: 4px; }
-.bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white;
-  box-shadow: 0 -1px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 10; }
-.bottom-nav button { background: none; border: none; display: flex; flex-direction: column; align-items: center;
-  font-size: 12px; color: #555; cursor: pointer; }
-.bottom-nav button.active { color: #0033a0; }
-.bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
-.floating-add { position: fixed; bottom: 160px; right: 20px; background: #0033a0; color: white;
-  font-size: 24px; width: 56px; height: 56px; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2); z-index: 20; }
+  background-color: #0033a0; 
+  color: white; 
+  padding: 12px; 
+  border: none;
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-size: 16px; 
+}
+.inline-options label, 
+.inline-options-wrap label {
+  display: inline-flex; 
+  align-items: center; 
+  margin-right: 12px; 
+  margin-bottom: 6px; 
+  cursor: pointer; 
+}
+.inline-options input, 
+.inline-options-wrap input { 
+  margin-right: 4px; 
+}
+.bottom-nav { 
+  position: fixed; 
+  bottom: 0; 
+  left: 0; 
+  width: 100%; 
+  background: white;
+  box-shadow: 0 -1px 6px rgba(0,0,0,0.1); 
+  display: flex; 
+  justify-content: space-around; 
+  padding: 8px 0; 
+  z-index: 10; 
+}
+.bottom-nav button { 
+  background: none; 
+  border: none; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
+  font-size: 12px; 
+  color: #555; 
+  cursor: pointer; 
+}
+
+.bottom-nav button.active { 
+  color: #0033a0; 
+}
+
+.bottom-nav button :hover {
+  color: #0033a0;
+  font-weight: 300;
+}
+.bottom-nav button span { 
+  font-size: 20px; 
+  margin-bottom: 2px; 
+}
+
+.floating-add { 
+  position: fixed; 
+  bottom: 160px; 
+  right: 20px; 
+  background: #0033a0; 
+  color: white;
+  font-size: 24px; 
+  width: 50px; 
+  height: 50px; 
+  border-radius: 50%;
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2); 
+  z-index: 20; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Kukaya App | Owner</h1>
-  <button class="icon-btn" onclick="alert('Notifications coming soon!')">🔔</button>
+  <button title="Notifications" class="icon-btn" onclick="alert('Notifications coming soon!')"><span><i class="bi bi-bell"></i></span></button>
 </header>
 
 <main>
@@ -80,13 +195,13 @@ section.active { display: block; }
 
     <div id="dynamic-fields"></div>
 
-    <label>Nearby Locations:</label>
+    <label>Nearby Landmark(s):</label>
     <input name="nearby_locations" placeholder="Comma-separated nearby landmarks" />
 
-    <label>More Details:</label>
+    <label>Distance Estimation:</label>
     <input name="details" placeholder="Distance from Known Points" />
 
-    <label>Room Nature:</label>
+    <label>Room Type:</label>
     <select name="room_nature" required>
       <option value="">Select Room Type:</option>
       <option value="self-contained">Self-contained:</option>
@@ -109,6 +224,8 @@ section.active { display: block; }
       <label><input type="checkbox" name="offers" value="coffee_dispenser"> Coffee</label>
       <label><input type="checkbox" name="offers" value="cooking_vessel"> Cooking</label>
       <label><input type="checkbox" name="offers" value="fridge"> Fridge</label>
+      <label><input type="checkbox" name="offers" value="fridge"> Elevator</label>
+      <label><input type="checkbox" name="offers" value="fridge"> Generator</label>
       <label><input type="checkbox" name="offers" value="other"> Other</label>
     </div>
 
@@ -120,13 +237,13 @@ section.active { display: block; }
 </section>
 </main>
 
-<div class="floating-add" onclick="showSection('add')">➕</div>
+<div class="floating-add" onclick="showSection('add')"><i class="bi bi-plus"></i></div>
 
 <!-- Bottom Navigation -->
 <div class="bottom-nav">
-  <button class="active" onclick="window.location.href='dashboard.html'"><span>🏠</span>Home</button>
-  <button onclick="window.location.href='list-booking.html'"><span>📄</span>Bookings</button>
-  <button onclick="window.location.href='../account.html'"><span>👤</span>Account</button>
+  <button class="active" onclick="window.location.href='dashboard.html'"><span><i class="bi bi-houses"></i></span><strong>Home</strong></button>
+  <button onclick="window.location.href='list-booking.html'"><span><i class="bi bi-ticket"></i></span><strong>Bookings</strong></button>
+  <button onclick="showSection('account', event)"><span><i class="bi bi-person"></i></span><strong>Profile</strong></button>
 </div>
 
 <script>
@@ -151,10 +268,10 @@ function showSection(section, event){
 
 // Category & Modes
 const categoryModes={
-  apartment:["standalone","ghorofa"],
-  hotel:["standalone","ghorofa"],
-  lodge:["standalone","ghorofa"],
-  office:["standalone","ghorofa"]
+  apartment:["standalone","highrise"],
+  hotel:["standalone","highrise"],
+  lodge:["standalone","highrise"],
+  office:["standalone","highrise"]
 };
 
 // Dynamic fields HTML
@@ -165,7 +282,7 @@ const dynamicFieldsHTML={
       
       <input name="num_rooms" type="number" placeholder="Number of Rooms" />
     </div>
-    <div id="ghorofa-fields">
+    <div id="highrise-fields">
       
       
       <input name="num_floors" type="number" placeholder="Number of Floors" />
@@ -178,7 +295,7 @@ const dynamicFieldsHTML={
       
       <input name="num_rooms" type="number" placeholder="Number of Rooms" />
     </div>
-    <div id="ghorofa-fields">
+    <div id="highrise-fields">
       
       <input name="num_floors" type="number" placeholder="Number of Floors" />
       <input name="rooms_per_floor" placeholder="Number of Rooms" />
@@ -189,7 +306,7 @@ const dynamicFieldsHTML={
       
       <input name="num_rooms" type="number" placeholder="Number of Rooms" />
     </div>
-    <div id="ghorofa-fields">
+    <div id="highrise-fields">
       
       <input name="num_floors" type="number" placeholder="Number of Floors" />
       <input name="rooms_per_floor" placeholder="Number of Rooms" />
@@ -203,7 +320,7 @@ const dynamicFieldsHTML={
       <input name="num_rooms" type="number" placeholder="Number of Rooms" />
       <input name="office_size" type="text" placeholder="Squre Metres" />
     </div>
-    <div id="ghorofa-fields">
+    <div id="highrise-fields">
       
       <input name="num_floors" type="number" placeholder="Number of Floors" />
       <input name="rooms_per_floor" placeholder="Number of Offices" />

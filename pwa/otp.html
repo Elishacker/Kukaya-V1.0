@@ -104,7 +104,7 @@
               case "admin":
                 window.location.href = "a/dashboard.html"; break;
               default:
-                window.location.href = "c/dashboard.html";
+                window.location.href = "../dashboard.html";
             }
           }, 800);
         } else {
@@ -151,8 +151,8 @@
         }
       } catch(err){
         console.error(err);
-        statusMsg.textContent = "";
-        alert("Network error: " + err.message);
+        statusMsg.textContent = "OTP has been used!";
+        alert("Network error: " + statusMsg.textContent);
       }
     });
   </script>

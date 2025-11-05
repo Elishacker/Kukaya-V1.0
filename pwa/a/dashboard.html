@@ -5,7 +5,7 @@
 
 <script>
 async function loadUsers(){
-  const res = await fetch("http://localhost:8000/api/admin/users/");
+  const res = await fetch("http://localhost:8000/api/apartments/lists");
   const data = await res.json();
   document.getElementById("userList").innerHTML = data.map(u => `
     <div>${u.phone} - ${u.role}</div>

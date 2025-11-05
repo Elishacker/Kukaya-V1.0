@@ -1,21 +1,17 @@
-from rest_framework import serializers
+from rest_framework import serializers # type: ignore
 from .models import User, Apartment, ApartmentImage, Booking, Payment
-from django.core.files.base import ContentFile
-from django.utils import timezone
+from django.core.files.base import ContentFile # type: ignore
+from django.utils import timezone # type: ignore
 import base64, json
 
-# -----------------------------
 # USER SERIALIZER
-# -----------------------------
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'phone', 'role']
 
 
-# -----------------------------
 # APARTMENT IMAGE SERIALIZER
-# -----------------------------
 class ApartmentImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
 
@@ -30,9 +26,7 @@ class ApartmentImageSerializer(serializers.ModelSerializer):
         return None
 
 
-# -----------------------------
 # APARTMENT SERIALIZER
-# -----------------------------
 class ApartmentSerializer(serializers.ModelSerializer):
     owner_phone = serializers.CharField(source='owner.phone', read_only=True)
     images = ApartmentImageSerializer(many=True, read_only=True)
@@ -67,13 +61,13 @@ class ApartmentSerializer(serializers.ModelSerializer):
         if service_type == 'standalone':
             if not attrs.get('num_apartments') and not attrs.get('num_rooms'):
                 errors['num_apartments'] = "num_apartments or num_rooms is required for standalone."
-        elif service_type == 'ghorofa':
+        elif service_type == 'highrise':
             if not attrs.get('num_floors'):
-                errors['num_floors'] = "num_floors is required for ghorofa."
+                errors['num_floors'] = "num_floors is required for highrise."
             if not attrs.get('rooms_per_floor'):
-                errors['rooms_per_floor'] = "rooms_per_floor is required for ghorofa."
+                errors['rooms_per_floor'] = "rooms_per_floor is required for highrise."
         else:
-            errors['service_type'] = 'service_type must be either "standalone" or "ghorofa".'
+            errors['service_type'] = 'service_type must be either "standalone" or "highrise".'
 
         if attrs.get('category') not in ['apartment', 'hotel', 'lodge', 'office']:
             errors['category'] = 'category must be one of: apartment, hotel, lodge, office.'
@@ -148,9 +142,7 @@ class ApartmentSerializer(serializers.ModelSerializer):
         return ret
 
 
-# -----------------------------
 # BOOKING SERIALIZER
-# -----------------------------
 class BookingSerializer(serializers.ModelSerializer):
     apartment_name = serializers.CharField(source='apartment.name', read_only=True)
     location = serializers.CharField(source='apartment.location', read_only=True)
@@ -168,9 +160,7 @@ class BookingSerializer(serializers.ModelSerializer):
         read_only_fields = ['customer', 'created_at', 'status']
 
 
-# -----------------------------
 # PAYMENT SERIALIZER
-# -----------------------------
 class PaymentSerializer(serializers.ModelSerializer):
     booking_id = serializers.IntegerField(source='booking.id', read_only=True)
 

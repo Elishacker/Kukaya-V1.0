@@ -5,48 +5,203 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Owner Dashboard — Mobile View</title>
   <link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon">
+
+  <!-- Vendor CSS Files -->
+<link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="../vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+<link href="../vendor/aos/aos.css" rel="stylesheet">
+<link href="../vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+<link href="../vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background-color: #f8f9fa; color: #333; padding-bottom: 100px; }
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: Arial, sans-serif; 
+    }
+    body { 
+      background-color: #f8f9fa; 
+      color: #333; 
+      padding-bottom: 100px; 
+    }
 
     /* Header */
-    header { background-color: #0033a0; color: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
-    header h1 { font-size: 18px; }
-    header .icon-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+    header { 
+      background-color: #0033a0; 
+      color: white; 
+      padding: 12px 16px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      position: sticky; 
+      top: 0; 
+      z-index: 10; 
+    }
+    header h1 { 
+      font-size: 18px; 
+    }
+    header .icon-btn { 
+      background: none; 
+      border: none; 
+      color: white; 
+      font-size: 22px; 
+      cursor: pointer; 
+    }
 
     /* Search Bar */
-    .search-bar { padding: 10px 16px; background: #fff; display: flex; gap: 8px; align-items: center; border-bottom: 1px solid #ddd; }
-    .search-bar input { flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; }
-    .search-bar button { background: #0033a0; border: none; color: white; padding: 8px 12px; border-radius: 6px; cursor: pointer; }
+    .search-bar { 
+      padding: 10px 16px; 
+      background: #fff; 
+      display: flex; 
+      gap: 8px; 
+      align-items: center; 
+      border-bottom: 1px solid #ddd; 
+    }
+    .search-bar input { 
+      flex: 1; 
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      border: 1px solid #ccc; 
+    }
+    .search-bar button { 
+      background: #0033a0; 
+      border: none; 
+      color: white; 
+      padding: 8px 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+    }
 
-    main { padding: 10px 16px; }
-    section { display: none; }
-    section.active { display: block; }
+    main { 
+      padding: 10px 16px; 
+    }
+    section { 
+      display: none; 
+    }
+    section.active { 
+      display: block; 
+    }
 
     /* Apartment Cards */
-    .apartments-list { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
-    .apartment-card { background: white; border-radius: 10px; padding: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
-    .apartment-card img { width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 8px; }
-    .apartment-card h3 { font-size: 16px; margin-bottom: 4px; }
-    .apartment-card p { font-size: 14px; margin-bottom: 4px; }
-    .apartment-actions { display: flex; gap: 6px; margin-top: 6px; }
-    .apartment-actions button { flex: 1; padding: 8px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 4px; }
-    .btn-edit { background: #4CAF50; color: white; }
-    .btn-delete { background: #d9534f; color: white; }
+    .apartments-list { 
+      display: grid; 
+      grid-template-columns: 1fr; 
+      gap: 12px; 
+      margin-top: 12px; 
+    }
+    .apartment-card { 
+      background: white; 
+      border-radius: 10px; 
+      padding: 12px; 
+      box-shadow: 0 1px 6px rgba(0,0,0,0.1); 
+      display: flex; 
+      flex-direction: column; 
+    }
+    .apartment-card img { 
+      width: 100%; 
+      height: 160px; 
+      object-fit: cover; 
+      border-radius: 8px; 
+      margin-bottom: 8px; 
+    }
+    .apartment-card h3 { 
+      font-size: 16px; 
+      margin-bottom: 4px; 
+    }
+    .apartment-card p { 
+      font-size: 14px; 
+      margin-bottom: 4px; 
+    }
+    .apartment-actions { 
+      display: flex; 
+      gap: 6px; 
+      margin-top: 6px; 
+    }
+    .apartment-actions button { 
+      flex: 1; 
+      padding: 8px; 
+      border-radius: 6px; 
+      border: none; 
+      cursor: pointer; 
+      font-size: 14px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      gap: 4px; 
+    }
+    .btn-edit { 
+      background: #0033a0; 
+      color: white; 
+    }
+    .btn-delete { 
+      background: #d9534f; 
+      color: white; 
+    }
 
     /* Booking Cards */
-    .booking-card { background: white; padding: 12px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-    .booking-card p { font-size: 14px; margin-bottom: 4px; }
+    .booking-card { 
+      background: white; 
+      padding: 12px; 
+      border-radius: 10px; 
+      margin-bottom: 10px; 
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1); 
+    }
+    .booking-card p { 
+      font-size: 14px; 
+      margin-bottom: 4px; 
+    }
 
     /* Account */
-    .account-section p { font-size: 14px; margin-bottom: 6px; }
-    .logout-btn { background: #d9534f; color: white; width: 100%; padding: 10px; border: none; border-radius: 6px; margin-top: 10px; cursor: pointer; }
+    .account-section p { 
+      font-size: 14px; 
+      margin-bottom: 6px; 
+    }
+    .logout-btn { 
+      background: #d9534f; 
+      color: white; 
+      width: 100%; 
+      padding: 10px; 
+      border: none; 
+      border-radius: 6px; 
+      margin-top: 10px; 
+      cursor: pointer; 
+    }
 
     /* Bottom Navigation */
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; box-shadow: 0 -1px 6px rgba(0,0,0,0.1); display: flex; justify-content: space-around; padding: 8px 0; z-index: 10; }
-    .bottom-nav button { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 12px; color: #555; cursor: pointer; }
-    .bottom-nav button.active { color: #0033a0; }
-    .bottom-nav button span { font-size: 20px; margin-bottom: 2px; }
+    .bottom-nav { 
+      position: fixed; 
+      bottom: 0; left: 0; 
+      width: 100%; 
+      background: white; 
+      box-shadow: 0 -1px 6px rgba(0,0,0,0.1); 
+      display: flex; 
+      justify-content: space-around; 
+      padding: 8px 0; 
+      z-index: 10; 
+    }
+    .bottom-nav button { 
+      background: none; 
+      border: none; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      font-size: 12px; 
+      color: #555; 
+      cursor: pointer; 
+    }
+    .bottom-nav button.active { 
+      color: #0033a0; 
+    }
+
+    .bottom-nav button :hover {
+      color: #0033a0;
+      font-weight: 300;
+    }
+    .bottom-nav button span { 
+      font-size: 20px; 
+      margin-bottom: 2px; 
+    }
 
     /* Floating Add Button */
     .floating-add-btn {
@@ -56,13 +211,12 @@
       background: #0033a0;
       color: white;
       border-radius: 50%;
-      width: 60px;
-      height: 60px;
+      width: 50px;
+      height: 50px;
       font-size: 32px;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 8px #4CAF50;
       cursor: pointer;
       z-index: 15;
     }
@@ -74,12 +228,12 @@
 
 <header>
   <h1>Kukaya App | Owner</h1>
-  <button class="icon-btn" onclick="alert('Notifications coming soon!')">🔔</button>
+  <button title="Notifications" class="icon-btn" onclick="alert('Notifications coming soon!')"><span><i class="bi bi-bell"></i></span></button>
 </header>
 
 <div class="search-bar">
   <input type="text" id="search-input" placeholder="Search apartments..." oninput="filterApartments()">
-  <button onclick="filterApartments()">🔍</button>
+  <button title="Filtering Apartment" onclick="filterApartments()"><span><i class="bi bi-search"></i></span></button>
 </div>
 
 <main>
@@ -104,13 +258,13 @@
 </main>
 
 <!-- Floating Add Apartment Button -->
-<div class="floating-add-btn" onclick="addApartment()">➕</div>
+<div class="floating-add-btn" onclick="addApartment()"><span><i class="bi bi-plus"></i></span></div>
 
 <!-- Bottom Navigation -->
 <div class="bottom-nav">
-  <button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
-  <button onclick="showSection('bookings', event)"><span>📄</span>Bookings</button>
-  <button onclick="showSection('account', event)"><span>👤</span>Profile</button>
+  <button class="active" onclick="showSection('home', event)"><span><i class="bi bi-houses"></i></span><strong>Home</strong></button>
+  <button onclick="showSection('bookings', event)"><span><i class="bi bi-ticket"></i></span><strong>Bookings</strong></button>
+  <button onclick="showSection('account', event)"><span><i class="bi bi-person"></i></span><strong>Profile</strong></button>
 </div>
 
 <script>
@@ -164,8 +318,8 @@
         <p><strong>Price:</strong> Tzs. ${a.price}/=</p>
         <p>${a.details || ''}</p>
         <div class="apartment-actions">
-          <button class="btn-edit" onclick="editApartment(${a.id})">✏️ Edit</button>
-          <button class="btn-delete" onclick="deleteApartment(${a.id})">🗑️ Delete</button>
+          <button class="btn-edit" onclick="editApartment(${a.id})"> <span><i class="bi bi-pencil"></i></span>Edit</button>
+          <button class="btn-delete" onclick="deleteApartment(${a.id})"><span><i class="bi bi-trash"></i></span> Delete</button>
         </div>
       </div>`).join('');
   }

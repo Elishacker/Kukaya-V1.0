@@ -1,11 +1,11 @@
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
-from django.contrib.auth import authenticate, get_user_model, login
-from django.contrib.auth import logout as django_logout
-from django.db import transaction
-from django.core.files.base import ContentFile
-from django.utils import timezone
+from rest_framework.decorators import api_view, permission_classes # type: ignore
+from rest_framework.permissions import IsAuthenticated, AllowAny # type: ignore
+from rest_framework.response import Response # type: ignore
+from django.contrib.auth import authenticate, get_user_model, login # type: ignore
+from django.contrib.auth import logout as django_logout # type: ignore
+from django.db import transaction # type: ignore
+from django.core.files.base import ContentFile # type: ignore
+from django.utils import timezone # type: ignore
 from .models import Apartment, Booking, PhoneOTP, ApartmentImage, Payment
 from .serializers import (
     UserSerializer,
@@ -17,9 +17,7 @@ import random, base64, json
 
 User = get_user_model()
 
-# -----------------------------
 # OTP Endpoints
-# -----------------------------
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def request_otp(request):
@@ -71,9 +69,7 @@ def logout(request):
     return Response({"ok": True, "message": "Logged out successfully."})
 
 
-# -----------------------------
 # Admin Login
-# -----------------------------
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def admin_login(request):
@@ -91,9 +87,7 @@ def admin_login(request):
     return Response({"ok": True, "user": UserSerializer(user).data, "message": "Admin login successful."})
 
 
-# -----------------------------
 # Apartment Endpoints
-# -----------------------------
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -228,9 +222,7 @@ def list_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-# -----------------------------
 # Booking Endpoints
-# -----------------------------
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def book_apartment(request):
@@ -256,9 +248,7 @@ def booking_history(request):
     return Response({"ok": True, "bookings": serializer.data})
 
 
-# -----------------------------
 # Payment Endpoints
-# -----------------------------
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @transaction.atomic
@@ -331,9 +321,7 @@ def payment_history(request):
     return Response({"ok": True, "payments": payments_data})
 
 
-# -----------------------------
 # Admin Endpoints
-# -----------------------------
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def admin_list_users(request):
@@ -354,9 +342,7 @@ def admin_list_apartments(request):
     return Response({"ok": True, "apartments": serializer.data})
 
 
-# -----------------------------
 # User Profile Endpoints
-# -----------------------------
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def user_profile(request):

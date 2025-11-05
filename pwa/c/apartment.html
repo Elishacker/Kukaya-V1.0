@@ -6,81 +6,440 @@
 <title>Kukaya Apartments — Dashboard</title>
 <link rel="shortcut icon" href="../assets/icons/icon-192.jpg" type="image/x-icon">
 <link rel="manifest" href="../manifest.json">
+<!-- Vendor CSS Files -->
+<link href="../vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="../vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+<link href="../vendor/aos/aos.css" rel="stylesheet">
+<link href="../vendor/glightbox/css/glightbox.min.css" rel="stylesheet">
+<link href="../vendor/swiper/swiper-bundle.min.css" rel="stylesheet">
 <style>
 /* ===== Reset ===== */
-*, *::before, *::after { box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif;}
-body{background:#f8f9fa;color:#333;padding-bottom:80px;}
-header{background:#0033a0;color:white;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10;}
-header h1{font-size:18px;}
-header .icon-btn{background:none;border:none;color:white;font-size:22px;cursor:pointer;}
-.search-bar{padding:10px 16px;background:#fff;display:flex;gap:8px;align-items:center;border-bottom:1px solid #ddd;}
-.search-bar input{flex:1;padding:8px 12px;border-radius:6px;border:1px solid #ccc;outline:none;}
-.search-bar button{background:#0033a0;border:none;color:white;padding:8px 12px;border-radius:6px;cursor:pointer;}
-.categories-bar{display:flex;justify-content:space-around;background:#fff;padding:10px 0;border-bottom:1px solid #ddd;}
-.category-btn{background:#f1f1f1;border:none;border-radius:20px;padding:8px 14px;font-size:14px;color:#333;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.2s,color 0.2s;}
-.category-btn.active,.category-btn:hover{background:#0033a0;color:white;}
-main{padding:10px 16px;}
-section{display:none;}
-section.active{display:block;}
-.apartments-list{display:grid;grid-template-columns:1fr;gap:12px;margin-top:12px;}
-.apartment-card{background:white;border-radius:10px;padding:12px;box-shadow:0 1px 6px rgba(0,0,0,0.1);display:flex;flex-direction:column;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;}
-.apartment-card:hover{transform:translateY(-3px);box-shadow:0 2px 8px rgba(0,0,0,0.15);}
-.apartment-card img{width:100%;height:160px;object-fit:cover;border-radius:8px;margin-bottom:8px;}
-.apartment-card h3{font-size:16px;margin-bottom:4px;}
-.apartment-card p{font-size:14px;margin-bottom:4px;}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;z-index:1000;}
-.modal.active,.modal.show{display:flex;}
-.modal-content{background:white;border-radius:10px;padding:16px;width:90%;max-height:90%;overflow-y:auto;animation:slideIn 0.3s ease;}
-@keyframes slideIn{from{transform:translateY(20px);opacity:0;}to{transform:translateY(0);opacity:1;}}
-.slider{position:relative;width:100%;overflow:hidden;border-radius:8px;margin-bottom:10px;}
-.slides{display:flex;transition:transform 0.4s ease-in-out;}
-.slides img{width:100%;height:220px;object-fit:cover;border-radius:8px;}
-.arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:white;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;}
-.arrow.left{left:8px;}
-.arrow.right{right:8px;}
-.dots{text-align:center;margin-top:6px;}
-.dot{height:8px;width:8px;margin:0 4px;background-color:#bbb;border-radius:50%;display:inline-block;transition:background-color 0.3s;}
-.dot.active{background-color:#0033a0;}
-.modal h3{font-size:18px;margin-bottom:6px;color:#0033a0;}
-.modal p{font-size:14px;margin-bottom:8px;}
-.modal-buttons{display:flex;gap:8px;margin-top:10px;}
-.modal-buttons button{flex:1;border:none;border-radius:6px;padding:10px;cursor:pointer;font-size:14px;}
-.btn-close{background:#ccc;color:black;}
-.btn-book{background:#0033a0;color:white;}
-#booking-modal .modal-content form label{display:block;font-size:14px;margin-bottom:4px;color:#0033a0;}
-#booking-modal .modal-content form input,#booking-modal .modal-content form textarea{width:100%;padding:8px;margin-bottom:10px;border:1px solid #ccc;border-radius:6px;}
-.rooms-control{display:flex;align-items:center;gap:8px;}
-.rooms-control input{appearance:none;}
-.rooms-control button{background:#0033a0;color:white;border:none;font-size:1.2rem;width:40px;height:40px;border-radius:6px;cursor:pointer;}
-@media(max-width:480px){.modal-content{width:95%;padding:16px;}.rooms-control button{width:36px;height:36px;}}
-.booking-card{background:white;padding:12px;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.1);}
-.booking-card p{font-size:14px;margin-bottom:4px;}
-.account-section p{font-size:14px;margin-bottom:6px;}
-.logout-btn{background:#d9534f;color:white;width:100%;padding:10px;border:none;border-radius:6px;margin-top:10px;cursor:pointer;}
-.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:white;box-shadow:0 -1px 6px rgba(0,0,0,0.1);display:flex;justify-content:space-around;padding:8px 0;z-index:10;}
-.bottom-nav button{background:none;border:none;display:flex;flex-direction:column;align-items:center;font-size:12px;color:#555;cursor:pointer;}
-.bottom-nav button.active{color:#0033a0;}
-.bottom-nav button span{font-size:20px;margin-bottom:2px;}
-.no-data{text-align:center;margin-top:20px;color:#666;font-size:14px;}
+*, 
+*::before, 
+*::after { 
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    font-family:Arial,sans-serif;
+}
+
+body {
+    background:#f8f9fa;
+    color:#333;
+    padding-bottom:80px;
+}
+
+header {
+    background:#0033a0;
+    color:white;
+    padding:12px 16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    position:sticky;
+    top:0;z-index:10;
+}
+
+header h1 {
+    font-size:18px;
+}
+
+header .icon-btn {
+    background:none;
+    border:none;
+    color:white;
+    font-size:22px;
+    cursor:pointer;
+}
+
+.search-bar {
+    padding:10px 16px;
+    background:#fff;
+    display:flex;
+    gap:8px;
+    align-items:center;
+    border-bottom:1px solid #ddd;
+}
+
+.search-bar input {
+    flex:1;
+    padding:8px 12px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    outline:none;
+}
+
+.search-bar button {
+    background:#0033a0;
+    border:none;
+    color:white;
+    padding:8px 12px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.categories-bar {
+    display:flex;
+    justify-content:space-around;
+    background:#fff;
+    padding:10px 0;
+    border-bottom:1px solid #ddd;
+}
+
+.category-btn {
+    background:#f1f1f1;
+    border:none;
+    border-radius:20px;
+    padding:8px 14px;
+    font-size:14px;
+    color:#333;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    transition:background 0.2s,color 0.2s;
+}
+
+.category-btn.active,
+.category-btn:hover {
+    background:#0033a0;
+    color:white;
+}
+
+main {
+    padding:10px 16px;
+}
+
+section {
+    display:none;
+}
+
+section.active {
+    display:block;
+}
+
+.apartments-list {
+    display:grid;
+    grid-template-columns:1fr;
+    gap:12px;
+    margin-top:12px;
+}
+
+.apartment-card {
+    background:white;
+    border-radius:10px;
+    padding:12px;
+    box-shadow:0 1px 6px rgba(0,0,0,0.1);
+    display:flex;
+    flex-direction:column;
+    cursor:pointer;
+    transition:transform 0.2s,box-shadow 0.2s;
+}
+
+.apartment-card:hover {
+    transform:translateY(-3px);
+    box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
+
+.apartment-card img {
+    width:100%;
+    height:160px;
+    object-fit:cover;
+    border-radius:8px;
+    margin-bottom:8px;
+}
+
+.apartment-card h3 {
+    font-size:16px;
+    margin-bottom:4px;
+}
+
+.apartment-card p {
+    font-size:14px;
+    margin-bottom:4px;
+}
+
+.modal {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.modal.active,
+.modal.show {
+    display:flex;
+}
+
+.modal-content {
+    background:white;
+    border-radius:10px;
+    padding:16px;
+    width:90%;
+    max-height:90%;
+    overflow-y:auto;
+    animation:slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform:translateY(20px);
+        opacity:0;
+    }
+    to {
+        transform:translateY(0);
+        opacity:1;
+    }
+}
+
+.slider {
+    position:relative;
+    width:100%;
+    overflow:hidden;
+    border-radius:8px;
+    margin-bottom:10px;
+}
+
+.slides {
+    display:flex;
+    transition:transform 0.4s ease-in-out;
+}
+
+.slides img {
+    width:100%;
+    height:220px;
+    object-fit:cover;
+    border-radius:8px;
+}
+
+.arrow {
+    position:absolute;
+    top:50%;
+    transform:translateY(-50%);
+    background:rgba(0,0,0,0.5);
+    color:white;
+    border:none;
+    border-radius:50%;
+    width:32px;
+    height:32px;
+    cursor:pointer;
+    font-size:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.arrow.left {
+    left:8px;
+}
+
+.arrow.right {
+    right:8px;
+}
+
+.dots {
+    text-align:center;
+    margin-top:6px;
+}
+
+.dot {
+    height:8px;
+    width:8px;
+    margin:0 4px;
+    background-color:#bbb;
+    border-radius:50%;
+    display:inline-block;
+    transition:background-color 0.3s;
+}
+
+.dot.active {
+    background-color:#0033a0;
+}
+
+.modal h3 {
+    font-size:18px;
+    margin-bottom:6px;
+    color:#0033a0;
+}
+
+.modal p {
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.modal-buttons {
+    display:flex;
+    gap:8px;
+    margin-top:10px;
+}
+
+.modal-buttons button {
+    flex:1;
+    border:none;
+    border-radius:6px;
+    padding:10px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.btn-close {
+    background:#ccc;
+    color:black;
+}
+
+.btn-book {
+    background:#0033a0;
+    color:white;
+}
+
+#booking-modal 
+.modal-content form label {
+    display:block;
+    font-size:14px;
+    margin-bottom:4px;
+    color:#0033a0;
+}
+
+#booking-modal 
+.modal-content form input,
+#booking-modal 
+.modal-content form textarea {
+    width:100%;
+    padding:8px;
+    margin-bottom:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+}
+
+.rooms-control {
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.rooms-control input {
+    appearance:none;
+}
+
+.rooms-control button {
+    background:#0033a0;
+    color:white;
+    border:none;
+    font-size:1.2rem;
+    width:40px;
+    height:40px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+@media(max-width:480px) {
+    .modal-content {
+        width:95%;
+        padding:16px;
+    }
+    .rooms-control button {
+        width:36px;
+        height:36px;
+    }
+}
+
+.booking-card {
+    background:white;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.1);
+}
+
+.booking-card p {
+    font-size:14px;
+    margin-bottom:4px;
+}
+
+.account-section p {
+    font-size:14px;
+    margin-bottom:6px;
+}
+
+.logout-btn {
+    background:#d9534f;
+    color:white;
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    margin-top:10px;
+    cursor:pointer;
+}
+
+.bottom-nav {
+    position:fixed;
+    bottom:0;
+    left:0;
+    width:100%;
+    background:white;
+    box-shadow:0 -1px 6px rgba(0,0,0,0.1);
+    display:flex;
+    justify-content:space-around;
+    padding:8px 0;
+    z-index:10;
+}
+
+.bottom-nav button {
+    background:none;
+    border:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    font-size:12px;
+    color:#555;
+    cursor:pointer;
+}
+
+.bottom-nav button
+.active {
+    color:#0033a0;
+}
+
+.bottom-nav :hover{
+    color: #0033a0;
+    font-weight: 300;
+}
+
+.bottom-nav button span {
+    font-size:20px;
+    margin-bottom:2px;
+}
+
+.no-data {
+    text-align:center;
+    margin-top:20px;
+    color:#666;
+    font-size:14px;
+}
+
 </style>
 </head>
 <body>
 
 <header>
 <h1>Kukaya Apartments</h1>
-<button class="icon-btn" type="button" aria-label="Notifications">🔔</button>
+<button class="icon-btn" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
 </header>
 
 <div class="search-bar">
-<input type="text" id="search-input" placeholder="Search apartments..." oninput="filterAndRenderApartments()">
-<button onclick="filterAndRenderApartments()">🔍</button>
+<input type="text" id="search-input" placeholder="Search service..." oninput="filterAndRenderApartments()">
+<button title="filtering apartment" onclick="filterAndRenderApartments()"><i class="bi bi-search"></i></button>
 </div>
 
 <div class="categories-bar">
-<button class="category-btn active" data-type="all">🏠 All</button>
-<button class="category-btn" data-type="apartment">🏠 Apartment</button>
-<button class="category-btn" data-type="hotel">🏨 Hotel</button>
-<button class="category-btn" data-type="office">🏢 Office</button>
+<button class="category-btn active" data-type="all"> All</button>
+<button class="category-btn" data-type="apartment">Apartments</button>
+<button class="category-btn" data-type="hotel">Hotels</button>
+<button class="category-btn" data-type="lodge">Lodges</button>
 </div>
 
 <main>
@@ -99,7 +458,9 @@ section.active{display:block;}
 <div class="account-section">
 <p><strong>Phone:</strong> <span id="account-phone"></span></p>
 <p><strong>Role:</strong> <span id="account-role"></span></p>
+
 <button class="logout-btn" type="button" onclick="logout()">Logout</button>
+
 </div>
 </section>
 </main>
@@ -135,50 +496,327 @@ section.active{display:block;}
 </div>
 
 <div class="bottom-nav">
-<button class="active" onclick="showSection('home', event)"><span>🏠</span>Home</button>
-<button onclick="showSection('bookings', event)"><span>📄</span>Bookings</button>
-<button onclick="showSection('account', event)"><span>👤</span>Account</button>
+<button class="active" onclick="showSection('home', event)"><span><i class="bi bi-houses"></i></span><strong>Home</strong></button>
+<button onclick="showSection('bookings', event)"><span><i class="bi bi-ticket"></i></span><strong>Bookings</strong></button>
+<button onclick="showSection('account', event)"><span><i class="bi bi-person"></i></span><strong>Profile</strong></button>
 </div>
 
 <script>
 let apartmentsData=[],selectedCategory='all',currentUser=null,currentSlide=0;
 
-function getCookie(name){const c=document.cookie.split(';').map(c=>c.trim());for(const i of c)if(i.startsWith(name+'='))return i.split('=')[1];return null;}
-async function apiFetch(path,opts={}){const url=path.startsWith('http')?path:`http://${window.location.hostname}:8000/api${path}`;const headers=new Headers(opts.headers||{});headers.set('Accept','application/json');if(opts.body && !(opts.body instanceof FormData)) headers.set('Content-Type','application/json'); const csrftoken=getCookie('csrftoken');if(csrftoken) headers.set('X-CSRFToken',csrftoken);const res=await fetch(url,{...opts,headers,credentials:'include'});if(res.status===401){alert('Login required');window.location.href='../index.html';return null;}const text=await res.text();try{return JSON.parse(text||'{}');}catch{return {ok:false,error:'Invalid JSON'};}}
-function escapeHTML(str=''){return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function getCookie(name){
+    const c=document.cookie.split(';').map(c=>c.trim());
+    for(const i of c)
+        if(i.startsWith(name+'='))return i.split('=')[1];
+    return null;
+}
 
-async function checkAuth(){const profile=await apiFetch('/auth/profile');if(!profile || !profile.ok || !profile.user){window.location.href='../index.html';return;} currentUser=profile.user;document.getElementById('account-phone').textContent=currentUser.phone||'N/A';document.getElementById('account-role').textContent=currentUser.role||'User';}
+async function apiFetch(path,opts={}){
+    const url=path.startsWith('http')?path:`http://${window.location.hostname}:8000/api${path}`;
+    const headers=new Headers(opts.headers||{});
+    headers.set('Accept','application/json');
+    if(opts.body && !(opts.body instanceof FormData)) headers.set('Content-Type','application/json'); 
+    const csrftoken=getCookie('csrftoken');
+    if(csrftoken) headers.set('X-CSRFToken',csrftoken);
 
-function showSection(section,e){document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));document.getElementById(section+'-section').classList.add('active');document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));if(e)e.currentTarget.classList.add('active');}
+    const res=await fetch(url,{...opts,headers,credentials:'include'});
+    if(res.status===401){
+        alert('Login required');
+        window.location.href='../index.html';
+        return null;
+    }
 
-async function loadApartments(){const res=await apiFetch('/apartments/lists');if(!res||!res.ok){document.getElementById('owner-apartments').innerHTML=`<p class="no-data">Failed to load apartments.</p>`;apartmentsData=[];return;} apartmentsData=res.apartments||[];filterAndRenderApartments();}
-function renderApartments(list){const container=document.getElementById('owner-apartments');if(!list||!list.length){container.innerHTML=`<p class="no-data">No apartments found.</p>`;return;} container.innerHTML='';list.forEach(a=>{const card=document.createElement('div');card.className='apartment-card';card.tabIndex=0;card.dataset.apartmentId=a.id;card.dataset.price=a.price;card.dataset.name=a.name||'Unnamed';const img=document.createElement('img');img.alt=a.name||'Apartment';img.src=(a.images&&a.images.length)?a.images[0].image_url:'assets/images/no-image.jpg';card.appendChild(img);const h3=document.createElement('h3');h3.textContent=a.name||'Unnamed';card.appendChild(h3);const loc=document.createElement('p');loc.innerHTML=`<strong>Location:</strong> ${escapeHTML(a.location||'')}`;card.appendChild(loc);const price=document.createElement('p');price.innerHTML=`<strong>Price:</strong> Tzs. ${escapeHTML(a.price||'')}/=`;card.appendChild(price);const cat=document.createElement('p');cat.innerHTML=`<strong>Type:</strong> ${escapeHTML(a.category||'')}`;card.appendChild(cat);card.addEventListener('click',()=>openApartmentModal(a.id));container.appendChild(card);});}
-function filterAndRenderApartments(){const query=(document.getElementById('search-input').value||'').toLowerCase();const filtered=apartmentsData.filter(a=>{const matchesCategory=selectedCategory==='all'||(a.category||'').toLowerCase()===selectedCategory.toLowerCase();const matchesSearch=(a.name||'').toLowerCase().includes(query)||(a.location||'').toLowerCase().includes(query);return matchesCategory&&matchesSearch;});renderApartments(filtered);}
-document.querySelectorAll('.category-btn').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');selectedCategory=btn.dataset.type;loadApartments();}));
+    const text=await res.text();
+    try{
+        return JSON.parse(text||'{}');
+    }
+    catch{
+        return {ok:false,error:'Invalid JSON'};
+    }
+}
 
-function openApartmentModal(id){const apt=apartmentsData.find(a=>a.id===id);if(!apt)return;const modal=document.getElementById('apartment-modal');const modalContent=document.getElementById('modal-content');const images=(apt.images&&apt.images.length)?apt.images:[{image_url:'assets/images/no-image.jpg'}];const slidesHTML=images.map(img=>`<img src="${escapeHTML(img.image_url)}" alt="${escapeHTML(apt.name||'')}">`).join('');const dotsHTML=images.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('');const offersHTML=apt.offers&&apt.offers.length?`<p><strong>Offers:</strong> ${escapeHTML(apt.offers.join(', '))}</p>`:'';modalContent.innerHTML=`<div class="slider"><div class="slides">${slidesHTML}</div><button class="arrow left" onclick="moveSlide(-1)">❮</button><button class="arrow right" onclick="moveSlide(1)">❯</button><div class="dots">${dotsHTML}</div></div><h3>${escapeHTML(apt.name||'')}</h3><p><strong>Location:</strong> ${escapeHTML(apt.location||'')}</p><p><strong>Price:</strong> Tzs. ${escapeHTML(apt.price||'')}/= /Night</p><p>${escapeHTML(apt.details||'No estimate distance')}</p>${offersHTML}<div class="modal-buttons"><button class="btn-book" onclick="bookApartment(${apt.id})">Reserve</button><button class="btn-book" onclick="chatApartment(${apt.id})">Chat</button><button class="btn-close" onclick="closeModal()">Close</button></div>`;currentSlide=0;modal.classList.add('active');showSlide();}
-function moveSlide(step){const slides=document.querySelectorAll('.slides img');if(!slides.length)return;currentSlide=(currentSlide+step+slides.length)%slides.length;showSlide();}
-function showSlide(){const slides=document.querySelector('.slides');const dots=document.querySelectorAll('.dot');if(!slides)return;slides.style.transform=`translateX(-${currentSlide*100}%)`;dots.forEach((d,i)=>d.classList.toggle('active',i===currentSlide));}
-function closeModal(){document.getElementById('apartment-modal').classList.remove('active');}
+function escapeHTML(str=''){
+    return String(str).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function checkAuth(){
+    const profile=await apiFetch('/auth/profile');
+    if(!profile || !profile.ok || !profile.user){
+        window.location.href='../index.html';
+        return;
+    } 
+    currentUser=profile.user;
+    document.getElementById('account-phone').textContent=currentUser.phone||'N/A';
+    document.getElementById('account-role').textContent=currentUser.role||'User';
+}
+
+function showSection(section,e){
+    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+    document.getElementById(section+'-section').classList.add('active');
+    document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.remove('active'));
+    if(e)e.currentTarget.classList.add('active');
+}
+
+async function loadApartments(){
+    const res=await apiFetch('/apartments/lists');
+    if(!res||!res.ok){
+        document.getElementById('owner-apartments').innerHTML=`<p class="no-data">Failed to load apartments.</p>`;
+        apartmentsData=[];
+        return;
+    } 
+    apartmentsData=res.apartments||[];
+    filterAndRenderApartments();
+}
+
+function renderApartments(list){
+    const container=document.getElementById('owner-apartments');
+    if(!list||!list.length){
+        container.innerHTML=`<p class="no-data">No apartments found.</p>`;
+        return;
+    } 
+    container.innerHTML='';
+    list.forEach(a=>{
+        const card=document.createElement('div');
+        card.className='apartment-card';
+        card.tabIndex=0;
+        card.dataset.apartmentId=a.id;
+        card.dataset.price=a.price;
+        card.dataset.name=a.name||'Unnamed';
+
+        const img=document.createElement('img');
+        img.alt=a.name||'Apartment';
+        img.src=(a.images&&a.images.length)?a.images[0].image_url:'assets/images/no-image.jpg';
+        card.appendChild(img);
+        const h3=document.createElement('h3');
+        h3.textContent=a.name||'Unnamed';
+        card.appendChild(h3);
+
+        const loc=document.createElement('p');
+        loc.innerHTML=`<strong>Location:</strong> ${escapeHTML(a.location||'')}`;
+        card.appendChild(loc);const price=document.createElement('p');
+        price.innerHTML=`<strong>Price:</strong> Tzs. ${escapeHTML(a.price||'')}/=`;
+        card.appendChild(price);
+
+        const cat=document.createElement('p');
+        cat.innerHTML=`<strong>Type:</strong> ${escapeHTML(a.category||'')}`;
+        card.appendChild(cat);
+        card.addEventListener('click',()=>openApartmentModal(a.id));
+        container.appendChild(card);
+    });
+}
+
+function filterAndRenderApartments(){
+    const query=(document.getElementById('search-input').value||'').toLowerCase();
+    const filtered=apartmentsData.filter(a=>{
+        const matchesCategory=selectedCategory==='all'||(a.category||'').toLowerCase()===selectedCategory.toLowerCase();
+        const matchesSearch=(a.name||'').toLowerCase().includes(query)||(a.location||'').toLowerCase().includes(query);
+        return matchesCategory&&matchesSearch;
+    });
+    
+    renderApartments(filtered);
+}
+
+document.querySelectorAll('.category-btn').forEach(btn=>btn.addEventListener('click',()=>{
+    document.querySelectorAll('.category-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');selectedCategory=btn.dataset.type;loadApartments();
+}));
+
+function openApartmentModal(id){
+    const apt=apartmentsData.find(a=>a.id===id);
+    if(!apt)
+    return;
+const modal=document.getElementById('apartment-modal');
+const modalContent=document.getElementById('modal-content');
+const images=(apt.images&&apt.images.length)?apt.images:[{image_url:'assets/images/no-image.jpg'}];
+const slidesHTML=images.map(img=>`<img src="${escapeHTML(img.image_url)}" alt="${escapeHTML(apt.name||'')}">`).join('');
+const dotsHTML=images.map((_,i)=>`<span class="dot ${i===0?'active':''}" data-index="${i}"></span>`).join('');
+const offersHTML=apt.offers&&apt.offers.length?`<p><strong>Offers:</strong> ${escapeHTML(apt.offers.join(', '))}</p>`:'';
+
+modalContent.innerHTML=`<div class="slider"><div class="slides">
+    ${slidesHTML}
+    </div><button class="arrow left" onclick="moveSlide(-1)">❮</button><button class="arrow right" onclick="moveSlide(1)">❯</button><div class="dots">
+    ${dotsHTML}</div></div><h3>
+    ${escapeHTML(apt.name||'')}</h3><p><strong>Location:</strong> 
+    ${escapeHTML(apt.location||'')}</p><p><strong>Price:</strong> Tzs. 
+    ${escapeHTML(apt.price||'')}/=</p><p>
+    ${escapeHTML(apt.details||'No estimate distance')}</p>
+    ${offersHTML}
+    <div class="modal-buttons">
+        <button class="btn-book" onclick="bookApartment(${apt.id})"><span> Book</span></button>
+        <button class="btn-book" onclick="chatApartment(${apt.id})"><span><i class="bi bi-whatsapp"></i></span></button>
+        <button class="btn-close" onclick="closeModal()">Close</button>
+    </div>`;
+    currentSlide=0;
+    modal.classList.add('active');
+    showSlide();}
+
+function moveSlide(step){
+    const slides=document.querySelectorAll('.slides img');
+    if(!slides.length)
+    return;
+
+    currentSlide=(currentSlide+step+slides.length)%slides.length;
+    showSlide();
+}
+
+function showSlide(){
+    const slides=document.querySelector('.slides');
+    const dots=document.querySelectorAll('.dot');
+    if(!slides)
+    return;
+    
+    slides.style.transform=`translateX(-${currentSlide*100}%)`;
+    dots.forEach((d,i)=>d.classList.toggle('active',i===currentSlide));
+}
+
+function closeModal(){
+    document.getElementById('apartment-modal').classList.remove('active');
+}
 
 // Booking
-function bookApartment(id){openBookingForm(id);}
-function openBookingForm(id){const modal=document.getElementById('booking-modal');const form=document.getElementById('booking-form');const apartmentInput=document.getElementById('booking-apartment-id');modal.classList.add('show');apartmentInput.value=id;form.reset();document.getElementById('rooms').value='1';const apt=apartmentsData.find(a=>a.id===id);if(!apt)return;apartmentInput.setAttribute('data-price',apt.price);apartmentInput.setAttribute('data-name',apt.name);}
-function closeBookingForm(){const modal=document.getElementById('booking-modal');const form=document.getElementById('booking-form');modal.classList.remove('show');form.reset();}
-document.getElementById('add-room').addEventListener('click',()=>{const roomsInput=document.getElementById('rooms');const val=Math.max(1,parseInt(roomsInput.value||'1',10));roomsInput.value=val+1;});
+function bookApartment(id){
+    openBookingForm(id);
+}
 
-async function submitBooking(e){e.preventDefault();if(!currentUser){alert('Login required');window.location.href='../index.html';return;} const apartmentInput=document.getElementById('booking-apartment-id');const price=parseFloat(apartmentInput.getAttribute('data-price'))||0;const name=apartmentInput.getAttribute('data-name')||'';const checkin=new Date(document.getElementById('checkin').value);const checkout=new Date(document.getElementById('checkout').value);const rooms=parseInt(document.getElementById('rooms').value||'1',10);let nights=1;if(checkout>checkin)nights=Math.ceil((checkout-checkin)/(1000*60*60*24));const totalCost=price*nights*rooms;const bookingData={apartmentId:apartmentInput.value,apartmentName:name,apartmentPrice:price,checkin:document.getElementById('checkin').value,checkout:document.getElementById('checkout').value,rooms:rooms,nights:nights,totalCost:totalCost,notes:document.getElementById('notes').value||''};sessionStorage.setItem('pendingBooking',JSON.stringify(bookingData));window.location.href='payment.html';}
+function openBookingForm(id){
+    const modal=document.getElementById('booking-modal');
+    const form=document.getElementById('booking-form');
+    const apartmentInput=document.getElementById('booking-apartment-id');
+    modal.classList.add('show');
+    apartmentInput.value=id;
+    form.reset();document.getElementById('rooms').value='1';
+    const apt=apartmentsData.find(a=>a.id===id);
+    if(!apt)
+    return;
+
+    apartmentInput.setAttribute('data-price',apt.price);
+    apartmentInput.setAttribute('data-name',apt.name);
+}
+
+function closeBookingForm(){
+    const modal=document.getElementById('booking-modal');
+    const form=document.getElementById('booking-form');
+    modal.classList.remove('show');form.reset();
+}
+
+document.getElementById('add-room').addEventListener('click',()=>{
+    const roomsInput=document.getElementById('rooms');
+    const val=Math.max(1,parseInt(roomsInput.value||'1',10));
+    roomsInput.value=val+1;
+});
+
+async function submitBooking(e){
+    e.preventDefault();
+    if(!currentUser){
+        alert('Login required');
+        window.location.href='../index.html';
+        return;
+    } 
+    const apartmentInput=document.getElementById('booking-apartment-id');
+    const price=parseFloat(apartmentInput.getAttribute('data-price'))||0;
+    const name=apartmentInput.getAttribute('data-name')||'';
+    const checkin=new Date(document.getElementById('checkin').value);
+    const checkout=new Date(document.getElementById('checkout').value);
+    const rooms=parseInt(document.getElementById('rooms').value||'1',10);
+    
+    let nights=1;
+    if(checkout>checkin)nights=Math.ceil((checkout-checkin)/(1000*60*60*24));
+    
+    const totalCost=price*nights*rooms;
+    const bookingData={
+        apartmentId:apartmentInput.value,
+        apartmentName:name,
+        apartmentPrice:price,
+        
+        checkin:document.getElementById('checkin').value,
+        checkout:document.getElementById('checkout').value,
+        rooms:rooms,
+        nights:nights,
+        totalCost:totalCost,
+        notes:document.getElementById('notes').value||''
+    };
+    sessionStorage.setItem('pendingBooking',JSON.stringify(bookingData));
+    window.location.href='payment.html';
+}
 
 // Chat
-function chatApartment(id){alert(`Chat feature coming soon for Apartment ID ${id}`);}
+function chatApartment(id){
+    window.location.href='chat.html'
+}
 
 // Bookings & Account
-async function loadBookings(){const res=await apiFetch('/bookings/history/');if(!res)return;const container=document.getElementById('bookings-list');if(!res.ok||!res.bookings||res.bookings.length===0){container.innerHTML=`<p class="no-data">No bookings found.</p>`;return;}container.innerHTML='';res.bookings.forEach(b=>{const card=document.createElement('div');card.className='booking-card';const title=document.createElement('p');title.innerHTML=`<strong>${escapeHTML(b.apartment_name||'')}</strong> - ${escapeHTML(b.location||'')}`;card.appendChild(title);const meta=document.createElement('p');meta.textContent=`Price: Tzs. ${b.price||''} | Status: ${b.status||''}`;card.appendChild(meta);const created=document.createElement('p');created.textContent=`Booked at: ${new Date(b.created_at).toLocaleString()}`;card.appendChild(created);container.appendChild(card);});}
-async function loadAccount(){const res=await apiFetch('/auth/profile');if(!res) return;if(!res.ok||!res.user)return;document.getElementById('account-phone').textContent=res.user.phone||'N/A';document.getElementById('account-role').textContent=res.user.role||'User';}
-async function logout(){try{await fetch(`http://${window.location.hostname}:8000/api/auth/logout/`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')||''}}).catch(()=>null);sessionStorage.clear();localStorage.clear();document.cookie.split(";").forEach(c=>{document.cookie=c.split("=")[0]+'=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';});window.location.href='../index.html';}catch(e){console.error(e);alert('Failed logout. Clear browser data.');window.location.href='../index.html';}}
+async function loadBookings(){
+    const res=await apiFetch('/bookings/history/');
+    if(!res)
+    return;
+
+    const container=document.getElementById('bookings-list');
+    if(!res.ok||!res.bookings||res.bookings.length===0){
+        container.innerHTML=`<p class="no-data">No bookings found.</p>`;
+        return;
+    }
+    container.innerHTML='';
+    res.bookings.forEach(b=>{
+        const card=document.createElement('div');
+        card.className='booking-card';
+        
+        const title=document.createElement('p');
+        title.innerHTML=`<strong>${escapeHTML(b.apartment_name||'')}</strong> - ${escapeHTML(b.location||'')}`;
+        card.appendChild(title);
+        
+        const meta=document.createElement('p');
+        meta.textContent=`Price: Tzs. ${b.price||''} | Status: ${b.status||''}`;
+        card.appendChild(meta);
+        
+        const created=document.createElement('p');
+        created.textContent=`Booked at: ${new Date(b.created_at).toLocaleString()}`;
+        card.appendChild(created);container.appendChild(card);
+    });
+}
+
+async function loadAccount(){
+    const res=await apiFetch('/auth/profile');
+    if(!res) 
+    return;
+
+    if(!res.ok||!res.user)
+    return;
+    document.getElementById('account-phone').textContent=res.user.phone||'N/A';
+    document.getElementById('account-role').textContent=res.user.role||'User';
+}
+
+async function logout(){
+    try{
+        await fetch(`http://${window.location.hostname}:8000/api/auth/logout/`,{
+            method:'POST',
+            credentials:'include',
+            headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')||''}
+        })
+        .catch(()=>null);
+        sessionStorage.clear();
+        localStorage.clear();
+
+        document.cookie.split(";").forEach(c=>{
+            document.cookie=c.split("=")[0]+'=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/';
+        });
+        window.location.href='../index.html';
+    }
+
+    catch(e){
+        console.error(e);
+        alert('Failed logout. Clear browser data.');
+        window.location.href='../index.html';
+    }
+}
 
 // Init
-(async()=>{await checkAuth();await loadApartments();await loadBookings();await loadAccount();})();
+(async()=>{
+    await checkAuth();
+    await loadApartments();
+    await loadBookings();
+    await loadAccount();
+})();
+
 </script>
 </body>
 </html>
